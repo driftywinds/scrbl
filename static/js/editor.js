@@ -3,21 +3,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
     const MAX_LENGTH = 200000; // 200k characters limit
 
+    // Auto-grow function
+    function autoGrow(elem) {
+        // Store current scroll position
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+        elem.style.height = 'auto';
+        elem.style.height = (elem.scrollHeight) + 'px';
+
+        // Restore scroll position
+        window.scrollTo(scrollLeft, scrollTop);
+    }
+
     if (textarea) {
-        // Auto-grow function
-        function autoGrow(elem) {
-            // Store current scroll position
-            const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-            elem.style.height = 'auto';
-            elem.style.height = (elem.scrollHeight) + 'px';
-
-            // Restore scroll position
-            window.scrollTo(scrollLeft, scrollTop);
-        }
-
-        // Add input listener
         textarea.addEventListener('input', function() {
             autoGrow(textarea);
         });
@@ -37,19 +36,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ---------------------------------------------------------------------
-    // Live preview
+    // Write / Preview + live font preview
     //
-    // The preview pane renders the real article markup (same pipeline as the
-    // published note page) so the font choice is shown on formatted text, not
-    // on raw markdown. Nothing here is persisted: the font is only saved when
-    // the form is submitted.
+    // "Preview" shows the real rendered article (same markdown pipeline as the
+    // published note page, so headings are headings, not "#" characters) in the
+    // currently selected font. Picking a font switches to the preview right
+    // away so the effect is visible. Nothing here is persisted: the font is
+    // only saved when the form is submitted (Update / Publish).
     // ---------------------------------------------------------------------
     const fontSelect = document.getElementById('font');
     const editorForm = document.querySelector('[data-font-preview]');
+    const writePane = document.querySelector('[data-write-pane]');
+    const previewWrap = document.querySelector('[data-preview-wrap]');
     const previewPane = document.querySelector('[data-font-preview-pane]');
+    const modeHint = document.querySelector('[data-mode-hint]');
+    const modeTabs = document.querySelectorAll('[data-mode-tab]');
     const titleInput = document.querySelector('input[name="title"]');
     const authorInput = document.querySelector('input[name="author"]');
+    const previewUrl = editorForm ? editorForm.dataset.previewUrl : null;
+    const EMPTY_HTML = '<p class="text-gray-300 text-sm">Start typing to see the article preview.</p>';
 
+    let mode = 'write';
+    let previewSeq = 0;
     const loadedFonts = new Set();
 
     function loadFont(family) {
@@ -61,37 +69,29 @@ document.addEventListener('DOMContentLoaded', function() {
         document.head.appendChild(link);
     }
 
-    function selectedStack() {
-        if (!fontSelect) return null;
-        const option = fontSelect.options[fontSelect.selectedIndex];
-        if (!option) return null;
-        loadFont(option.dataset.googleFamily);
-        return option.dataset.stack || null;
-    }
-
     function applySelectedFont() {
-        const stack = selectedStack();
+        if (!fontSelect) return;
+        const option = fontSelect.options[fontSelect.selectedIndex];
+        if (!option) return;
+        loadFont(option.dataset.googleFamily);
+        const stack = option.dataset.stack;
         if (!stack) return;
-        // The pane is the formatted article; the form makes the textarea match.
-        if (previewPane) previewPane.style.fontFamily = stack;
-        if (editorForm) editorForm.style.fontFamily = stack;
+        // Only the writing/reading areas change; the controls keep the UI font.
+        if (writePane) writePane.style.fontFamily = stack;
+        if (previewWrap) previewWrap.style.fontFamily = stack;
     }
-
-    const previewUrl = editorForm ? editorForm.dataset.previewUrl : null;
-    let previewTimer = null;
 
     function renderPreview() {
         if (!previewPane || !previewUrl || !textarea) return;
 
-        const content = textarea.value;
-
-        if (!content.trim()) {
-            previewPane.innerHTML = '<p class="text-gray-300 text-sm">Start typing to see the article preview.</p>';
+        if (!textarea.value.trim()) {
+            previewPane.innerHTML = EMPTY_HTML;
             return;
         }
 
+        const seq = ++previewSeq;
         const body = new URLSearchParams({
-            content: content,
+            content: textarea.value,
             title: titleInput ? titleInput.value : '',
             author: authorInput ? authorInput.value : '',
         });
@@ -103,32 +103,40 @@ document.addEventListener('DOMContentLoaded', function() {
         })
             .then(function (response) { return response.json(); })
             .then(function (data) {
-                if (data && data.ok) {
-                    previewPane.innerHTML = data.html || '';
-                    applySelectedFont();
-                }
+                // Ignore stale responses and keep the last good preview on errors.
+                if (seq !== previewSeq || !data || !data.ok) return;
+                previewPane.innerHTML = data.html || EMPTY_HTML;
             })
-            .catch(function () {
-                // Keep the last good preview on a transient failure.
-            });
+            .catch(function () {});
     }
 
-    function schedulePreview() {
-        clearTimeout(previewTimer);
-        previewTimer = setTimeout(renderPreview, 350);
+    function setMode(next) {
+        mode = next;
+        const preview = next === 'preview';
+        if (writePane) writePane.hidden = preview;
+        if (previewWrap) previewWrap.hidden = !preview;
+        modeTabs.forEach(function (tab) {
+            tab.setAttribute('aria-selected', String(tab.dataset.modeTab === next));
+        });
+        if (modeHint) modeHint.textContent = preview ? 'Article preview' : 'Markdown source';
+        if (preview) {
+            renderPreview();
+        } else if (textarea) {
+            autoGrow(textarea);
+        }
     }
 
-    if (fontSelect) {
-        fontSelect.addEventListener('change', applySelectedFont);
-    }
-
-    if (textarea) {
-        textarea.addEventListener('input', schedulePreview);
-    }
-    [titleInput, authorInput].forEach(function (input) {
-        if (input) input.addEventListener('input', schedulePreview);
+    modeTabs.forEach(function (tab) {
+        tab.addEventListener('click', function () { setMode(tab.dataset.modeTab); });
     });
 
+    if (fontSelect) {
+        fontSelect.addEventListener('change', function () {
+            applySelectedFont();
+            // Show the formatted article so the new font is actually visible.
+            if (mode !== 'preview') setMode('preview');
+        });
+    }
+
     applySelectedFont();
-    renderPreview();
 });
