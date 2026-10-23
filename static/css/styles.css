@@ -244,3 +244,50 @@ body {
         overflow-wrap: anywhere;
     }
 }
+
+/* ---------------------------------------------------------------------------
+   Dark mode
+   --------------------------------------------------------------------------- */
+
+html.dark {
+    color-scheme: dark;
+}
+
+body {
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+html.dark .markdown-content a {
+    color: #fff;
+}
+
+html.dark .markdown-content pre {
+    background-color: #171717;
+}
+
+html.dark .markdown-content blockquote {
+    border-left-color: #444;
+    color: #b3b3b3;
+}
+
+html.dark .markdown-content hr {
+    border-top-color: #333;
+}
+
+html.dark .markdown-content th,
+html.dark .markdown-content td {
+    border-color: #333;
+}
+
+/* The theme button shows the mode it will switch to. */
+[data-theme-label-light] {
+    display: none;
+}
+
+html.dark [data-theme-label-dark] {
+    display: none;
+}
+
+html.dark [data-theme-label-light] {
+    display: inline;
+}

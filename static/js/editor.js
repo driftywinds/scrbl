@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showPlaceholder() {
         if (!previewPane) return;
-        previewPane.innerHTML = '<p class="text-gray-300 text-sm" data-preview-placeholder>Start typing to see the article preview.</p>';
+        previewPane.innerHTML = '<p class="text-gray-300 dark:text-gray-600 text-sm" data-preview-placeholder>Start typing to see the article preview.</p>';
     }
 
     function renderPreview() {

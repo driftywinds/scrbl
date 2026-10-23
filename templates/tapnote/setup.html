@@ -4,32 +4,32 @@
 <div class="container mx-auto px-4 py-16 max-w-md">
     <h1 class="text-3xl font-bold mb-8 text-center">Setup Admin Account</h1>
     
-    <div class="bg-white border border-gray-300 rounded-lg p-8 shadow-sm">
-        <p class="mb-8 text-gray-600 text-center leading-relaxed">Welcome to scrbl! Please create an administrator account to get started.</p>
+    <div class="bg-white border border-gray-300 rounded-lg p-8 shadow-sm dark:bg-gray-900 dark:border-gray-700">
+        <p class="mb-8 text-gray-600 text-center leading-relaxed dark:text-gray-400">Welcome to scrbl! Please create an administrator account to get started.</p>
         
         <form method="post" class="space-y-6">
             {% csrf_token %}
             <div class="space-y-2">
-                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
                 <input type="text" name="username" id="username" required 
-                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-black focus:border-black outline-none transition-colors"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md bg-transparent text-black placeholder-gray-400 focus:ring-black focus:border-black outline-none transition-colors dark:border-gray-700 dark:text-white dark:placeholder-gray-600 dark:focus:ring-white dark:focus:border-white"
                     placeholder="admin">
             </div>
             
             <div class="space-y-2">
-                <label for="email" class="block text-sm font-medium text-gray-700">Email (Optional)</label>
+                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email (Optional)</label>
                 <input type="email" name="email" id="email" 
-                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-black focus:border-black outline-none transition-colors"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md bg-transparent text-black placeholder-gray-400 focus:ring-black focus:border-black outline-none transition-colors dark:border-gray-700 dark:text-white dark:placeholder-gray-600 dark:focus:ring-white dark:focus:border-white"
                     placeholder="admin@example.com">
             </div>
             
             <div class="space-y-2">
-                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
                 <input type="password" name="password" id="password" required 
-                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-black focus:border-black outline-none transition-colors">
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md bg-transparent text-black placeholder-gray-400 focus:ring-black focus:border-black outline-none transition-colors dark:border-gray-700 dark:text-white dark:placeholder-gray-600 dark:focus:ring-white dark:focus:border-white">
             </div>
             
-            <button type="submit" class="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black font-medium transition-colors mt-6">
+            <button type="submit" class="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black font-medium transition-colors mt-6 dark:bg-white dark:text-black dark:hover:bg-gray-200 dark:focus:ring-white">
                 Create Admin Account
             </button>
         </form>

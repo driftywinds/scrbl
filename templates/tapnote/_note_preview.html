@@ -1,11 +1,11 @@
 {% if title or author %}
-<header class="mb-6 border-b border-gray-100 pb-6 sm:mb-8 sm:pb-8">
+<header class="mb-6 border-b border-gray-100 pb-6 sm:mb-8 sm:pb-8 dark:border-gray-800">
     {% if title %}
-    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-gray-900 leading-tight break-words">{{ title }}</h1>
+    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-gray-900 leading-tight break-words dark:text-white">{{ title }}</h1>
     {% endif %}
     {% if author %}
-    <div class="flex flex-wrap items-center text-sm text-gray-500 gap-x-3 gap-y-1">
-        <span class="font-bold text-gray-700">{{ author }}</span>
+    <div class="flex flex-wrap items-center text-sm text-gray-500 gap-x-3 gap-y-1 dark:text-gray-400">
+        <span class="font-bold text-gray-700 dark:text-gray-300">{{ author }}</span>
     </div>
     {% endif %}
 </header>

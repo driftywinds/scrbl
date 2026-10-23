@@ -164,6 +164,21 @@ class ViewsTests(TestCase):
                     'ul', 'ol', 'link']:
             self.assertContains(response, f'data-format="{fmt}"')
 
+    def test_theme_toggle_on_editor_and_note_pages(self):
+        """The theme switch is available in the editor and on public notes."""
+        home = self.client.get(reverse('home'))
+        self.assertContains(home, 'data-theme-toggle')
+        self.assertContains(home, 'js/theme.js')
+
+        public_view = self.client.get(reverse('view_note', args=[self.note.hashcode]))
+        self.assertContains(public_view, 'data-theme-toggle')
+
+        self.client.cookies[f'edit_token_{self.note.hashcode}'] = self.note.edit_token
+        editable_view = self.client.get(reverse('view_note', args=[self.note.hashcode]))
+        html = editable_view.content.decode()
+        self.assertIn('data-theme-toggle', html)
+        self.assertLess(html.index('data-theme-toggle'), html.index('Backup Edit Link'))
+
     def test_publish_view_get_redirects(self):
         """Test GET request to publish redirects to home"""
         response = self.client.get(reverse('publish'))
