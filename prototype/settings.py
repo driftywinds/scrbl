@@ -23,12 +23,12 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-0p*ria)n_#i%&6%ei#j@c8oyclnve0&bac2e)n0rjd+!c4p9x3'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-0p*ria)n_#i%&6%ei#j@c8oyclnve0&bac2e)n0rjd+!c4p9x3')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']  # For development - update this in production
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '*').split(',') if h.strip()]
 
 APPEND_SLASH = False
 
@@ -136,7 +136,14 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Added for production CSRF checks
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://tapnote-production.up.railway.app').split(',')
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()]
+
+# Behind a reverse proxy (Caddy/Cloudflare): trust forwarded proto/host so Django sees https
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+if not DEBUG:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
 
 # Comment System (Paranote) Configuration
 # Set to 'False' to disable comments

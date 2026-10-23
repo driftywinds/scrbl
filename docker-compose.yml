@@ -1,14 +1,14 @@
 services:
-  tapnote:
+  scrbl:
     build: .
     restart: unless-stopped
     ports:
       - "${PORT:-9009}:9009"
     env_file: .env
     volumes:
-      - tapnote-data:/data
-      - tapnote-media:/app/media
+      - scrbl-data:/data
+      - scrbl-media:/app/media
 
 volumes:
-  tapnote-data:
-  tapnote-media:
+  scrbl-data:
+  scrbl-media:
