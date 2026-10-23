@@ -264,9 +264,6 @@
         titleWrapper.style.alignItems = "center";
         titleWrapper.style.gap = "8px";
         
-        const titleIcon = document.createElement("span");
-        titleIcon.innerHTML = "📝"; // icon
-        
         const title = document.createElement("span");
         title.textContent = TEXT.title;
         title.style.fontWeight = "600";
@@ -284,7 +281,7 @@
             fontWeight: "500"
         });
         
-        titleWrapper.append(titleIcon, title, countSpan);
+        titleWrapper.append(title, countSpan);
         header.appendChild(titleWrapper);
         
         // Close button
