@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                 ("chapter_id", models.CharField(max_length=100)),
                 ("para_index", models.IntegerField()),
                 ("content", models.TextField()),
-                ("user_name", models.CharField(default="匿名", max_length=100)),
+                ("user_name", models.CharField(default="Anonymous", max_length=100)),
                 ("user_id", models.CharField(blank=True, max_length=100, null=True)),
                 (
                     "user_avatar",

@@ -1,5 +1,5 @@
 (function () {
-  // 支持油猴脚本注入的配置
+  // Supports configuration injected by a userscript
   const config = window.__paranoteConfig || {};
   const script = document.currentScript || {};
 
@@ -16,14 +16,14 @@
       }
   }
   
-  // 使用油猴的 GM_xmlhttpRequest 或普通 fetch
-  // 油猴脚本会注入 window.__paranoteRequest
+  // Use the userscript's GM_xmlhttpRequest when available, otherwise plain fetch
+  // The userscript injects window.__paranoteRequest
   async function apiRequest(url, options = {}) {
-    // 如果有油猴注入的请求函数，使用它（绑过 CSP）
+    // If a userscript injected a request function, use it (bypasses CSP)
     if (window.__paranoteRequest) {
       return window.__paranoteRequest(url, options);
     }
-    // 否则使用普通 fetch
+    // Otherwise plain fetch
     const res = await fetch(url, options);
     return res.json();
   }
@@ -56,8 +56,59 @@
     });
   }
 
+  // Every user-facing string of the comment panel, in English
+  const TEXT = {
+    title: "Comments",
+    placeholder: "Add a comment...",
+    submit: "Post",
+    submitting: "Posting...",
+    submitFailed: "Failed to post comment",
+    empty: "No comments yet",
+    anonymous: "Anonymous",
+    banned: "Banned",
+    expand: "Show more",
+    collapse: "Show less",
+    reply: "Reply",
+    replyPlaceholder: (name) => `Reply to ${name}...`,
+    replySubmit: "Reply",
+    replySubmitting: "Sending...",
+    replyFailed: "Failed to send reply",
+    cancel: "Cancel",
+    deleteAuthor: "Delete (author)",
+    deleteAdmin: "Delete (admin)",
+    deleteConfirm: "Delete this comment?",
+    deleteFailed: "Failed to delete comment",
+    unbanTitle: "Unban user",
+    banTitle: "Ban this user",
+    unbanConfirm: (name) => `Unban user "${name}"?`,
+    unbanSuccess: (name) => `Unbanned "${name}"`,
+    unbanFailed: "Failed to unban user",
+    banConfirm: (name) => `Ban user "${name}"?\nEnter a reason (optional):`,
+    banReasonDefault: "Banned by admin",
+    banSuccess: (name) => `User "${name}" has been banned`,
+    banFailed: "Failed to ban user",
+    alreadyLiked: "You have already liked this comment",
+    commentCount: (n) => `${n} comment${n === 1 ? "" : "s"}`,
+    showReplies: (n) => `Show ${n} repl${n === 1 ? "y" : "ies"} \u25BC`,
+    hideReplies: "Hide replies \u25B2",
+  };
+
+  // Locale used for comment timestamps. Pinned to English so the panel never
+  // falls back to the visitor's browser locale.
+  const DATE_LOCALE = "en-US";
+
+  function formatCommentTime(isoString) {
+    if (!isoString) return "";
+    return new Date(isoString).toLocaleString(DATE_LOCALE, {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
   function init() {
-      // 支持多个 root（知乎多个回答）
+      // Support multiple roots (e.g. several answers on one page)
       const roots = document.querySelectorAll("[data-na-root]");
       console.log("ParaNote: Checking roots...", roots.length);
       
@@ -71,7 +122,7 @@
           return;
       }
       
-      // 初始化每个 root
+      // Initialize each root
       roots.forEach((root, index) => initRoot(root, index));
   }
   
@@ -96,10 +147,10 @@
       
       let currentParaIndex = null;
 
-      // 检测是否为移动端
+      // Detect mobile devices
       const isMobile = window.innerWidth <= 768 || "ontouchstart" in window;
 
-      // 创建遮罩层（移动端用）
+      // Create the overlay (used on mobile)
       const overlay = document.createElement("div");
       overlay.className = "na-overlay";
       Object.assign(overlay.style, {
@@ -126,7 +177,7 @@
       };
       document.body.appendChild(overlay);
 
-      // 创建右侧评论面板
+      // Create the right-hand comment panel
       const sidebar = createSidebar();
       document.body.appendChild(sidebar.container);
 
@@ -134,18 +185,18 @@
         const container = document.createElement("div");
         container.className = "na-sidebar";
         
-        // Hypothesis 风格配色
+        // Hypothesis-style palette
         const styles = {
             bg: "#f7f7f7",
             cardBg: "#ffffff",
             text: "#333",
             meta: "#707070",
             border: "#dbdbdb",
-            primary: "#bd1c2b", // Hypothesis 红色
+            primary: "#bd1c2b", // Hypothesis red
             shadow: "0 4px 12px rgba(0,0,0,0.15)"
         };
 
-        // 注入 Keyframe 动画
+        // Inject keyframe animations
         const styleTag = document.createElement('style');
         styleTag.textContent = `
             @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -153,7 +204,7 @@
         `;
         document.head.appendChild(styleTag);
 
-        // 移动端和桌面端不同的样式
+        // Different styles for mobile and desktop
         if (isMobile) {
           Object.assign(container.style, {
             position: "fixed",
@@ -180,8 +231,8 @@
             position: "fixed",
             top: "0",
             right: "0",
-            width: "380px", // 更宽一点
-            height: "100vh", // 全高
+            width: "380px", // a little wider
+            height: "100vh", // full height
             background: styles.bg,
             borderLeft: `1px solid ${styles.border}`,
             boxShadow: "-2px 0 12px rgba(0,0,0,0.05)",
@@ -195,7 +246,7 @@
           });
         }
 
-        // 顶部栏
+        // Header bar
         const header = document.createElement("div");
         Object.assign(header.style, {
           display: "flex",
@@ -214,14 +265,14 @@
         titleWrapper.style.gap = "8px";
         
         const titleIcon = document.createElement("span");
-        titleIcon.innerHTML = "📝"; // 图标
+        titleIcon.innerHTML = "📝"; // icon
         
         const title = document.createElement("span");
-        title.textContent = "Annotations";
+        title.textContent = TEXT.title;
         title.style.fontWeight = "600";
         title.style.fontSize = "15px";
         
-        // 评论数量显示
+        // Comment count display
         const countSpan = document.createElement("span");
         countSpan.className = "na-comment-header-count";
         Object.assign(countSpan.style, {
@@ -236,7 +287,7 @@
         titleWrapper.append(titleIcon, title, countSpan);
         header.appendChild(titleWrapper);
         
-        // 关闭按钮
+        // Close button
         const closeBtn = document.createElement("button");
         closeBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
         Object.assign(closeBtn.style, {
@@ -265,19 +316,19 @@
         };
         header.appendChild(closeBtn);
 
-        // 列表区域
+        // List area
         const list = document.createElement("div");
         Object.assign(list.style, {
           padding: "16px",
           flex: "1",
           overflowY: "auto",
-          background: "#f7f7f7", // 灰色背景
+          background: "#f7f7f7", // grey background
           display: "flex",
           flexDirection: "column",
-          gap: "12px" // 卡片间距
+          gap: "12px" // card spacing
         });
 
-        // 输入区域
+        // Input area
         const inputArea = document.createElement("div");
         Object.assign(inputArea.style, {
           padding: "16px",
@@ -287,7 +338,7 @@
         });
 
         const textarea = document.createElement("textarea");
-        textarea.placeholder = "添加评论...";
+        textarea.placeholder = TEXT.placeholder;
         Object.assign(textarea.style, {
           width: "100%",
           minHeight: "80px",
@@ -318,14 +369,14 @@
         btnRow.style.justifyContent = "flex-end";
 
         const btn = document.createElement("button");
-        btn.textContent = "发布";
+        btn.textContent = TEXT.submit;
         Object.assign(btn.style, {
           padding: "8px 20px",
           border: "none",
           background: styles.primary,
           color: "#fff",
           cursor: "pointer",
-          borderRadius: "20px", // 圆角按钮
+          borderRadius: "20px", // rounded button
           fontSize: "14px",
           fontWeight: "600",
           transition: "opacity 0.2s",
@@ -338,12 +389,12 @@
           const content = textarea.value.trim();
           if (!content || currentParaIndex == null) return;
           
-          // 获取当前段落的上下文指纹 (前32个字符)
+          // Grab the context fingerprint of the current paragraph (first 32 characters)
           const pText = paras[currentParaIndex] ? getParaText(paras[currentParaIndex]) : "";
           const contextText = pText.slice(0, 32);
 
           try {
-            btn.textContent = "发送中...";
+            btn.textContent = TEXT.submitting;
             btn.disabled = true;
 
             await apiPost(apiBase + "/api/v1/comments", {
@@ -360,9 +411,9 @@
             await loadComments(currentParaIndex, list, sidebar.headerCount);
           } catch (e) {
             console.error("post comment failed", e);
-            alert("发送失败");
+            alert(TEXT.submitFailed);
           } finally {
-            btn.textContent = "发布";
+            btn.textContent = TEXT.submit;
             btn.disabled = false;
           }
         };
@@ -384,37 +435,39 @@
           return clone.textContent.trim();
       }
 
-      // 缓存所有段落的评论数据
+      // Cache the comment data for every paragraph
       let allCommentsData = null;
 
-      // 模糊定位算法：将评论重新挂载到正确的段落
+      // Fuzzy re-anchoring: remount comments onto the correct paragraph
       function reanchorComments(serverData) {
           const correctedData = {};
           const allComments = [];
           
-          // 1. 扁平化所有评论
+          // 1. Flatten every comment
           Object.values(serverData).forEach(list => allComments.push(...list));
           
-          // 2. 重新分配
+          // 2. Reassign
           allComments.forEach(c => {
               let targetIndex = c.paraIndex;
               
-              // 检查是否需要重定位
-              // 如果有上下文指纹，且当前位置的内容不匹配，则搜索全篇
+              // Check whether re-anchoring is needed.
+              // If a context fingerprint exists and the text at the current location
+              // does not match, search the whole document.
               if (c.contextText) {
                   const currentText = getParaText(paras[targetIndex]);
                   
-                  // 如果当前段落不存在，或者开头不匹配，说明段落变动了
+                  // If the paragraph is missing, or the beginning does not match, the paragraph moved
                   if (!currentText.startsWith(c.contextText)) {
-                      // 简单的全篇搜索 (Fuzzy Search)
-                      // 优化：先搜索附近，再搜索全篇。这里简化为直接搜索全篇。
+                      // Simple whole-document search (fuzzy search).
+                      // Optimisation would search nearby first, then the whole document;
+                      // simplified here to a direct whole-document search.
                       let bestMatchIndex = -1;
                       
                       for (let i = 0; i < paras.length; i++) {
                           const pText = getParaText(paras[i]);
                           if (pText.startsWith(c.contextText)) {
                               bestMatchIndex = i;
-                              break; // 找到了！
+                              break; // found it
                           }
                       }
                       
@@ -422,9 +475,8 @@
                           targetIndex = bestMatchIndex;
                           // console.log(`Re-anchored comment ${c.id} from ${c.paraIndex} to ${targetIndex}`);
                       } else {
-                          // 如果找不到匹配的段落，就变成"孤儿评论"，或者保留在原位(虽然错位)
-                          // 这里选择保留在原位，或者放到第0段，或者标记为失效。
-                          // 为了体验，暂且保留原位，标红？不，还是原位吧。
+                          // If no matching paragraph is found the comment becomes an "orphan".
+                          // It is kept in place rather than dropped, so the thread stays readable.
                       }
                   }
               }
@@ -449,7 +501,7 @@
             encodeURIComponent(chapterId);
           const data = await apiGet(url);
           
-          // 执行模糊定位纠正
+          // Apply the fuzzy re-anchoring corrections
           allCommentsData = reanchorComments(data.commentsByPara || {});
           return allCommentsData;
         } catch (e) {
@@ -458,7 +510,7 @@
         }
       }
 
-      // 简单的 JWT 解析函数
+      // Minimal JWT decoder
       function parseJwt(token) {
         try {
           const base64Url = token.split('.')[1];
@@ -477,7 +529,7 @@
 
         listEl.innerHTML = "";
         
-        // 检查当前用户权限
+        // Check the current user's permissions
         let isAdmin = false;
         let isAuthor = false;
         let token = null;
@@ -495,7 +547,8 @@
           }
         }
         
-        // 检查是否是文章作者（支持多种方式：TAPNOTE_EDIT_TOKEN 或 PARANOTE_EDIT_TOKEN 或 data-edit-token）
+        // Check whether the visitor is the note author
+        // (TAPNOTE_EDIT_TOKEN, PARANOTE_EDIT_TOKEN or data-edit-token)
         if (typeof window !== "undefined") {
           editToken = window.TAPNOTE_EDIT_TOKEN || window.PARANOTE_EDIT_TOKEN || script.dataset.editToken;
           if (editToken) {
@@ -503,7 +556,7 @@
           }
         }
         
-        // 获取黑名单（管理员或作者可见）
+        // Fetch the ban list (visible to admins and authors)
         let bannedUserIds = new Set();
         if (isAdmin || isAuthor) {
           try {
@@ -518,15 +571,15 @@
           }
         }
         
-        // 更新头部评论数
+        // Update the header comment count
         if (headerCountEl) {
-          headerCountEl.textContent = arr.length > 0 ? arr.length + "条" : "";
+          headerCountEl.textContent = arr.length > 0 ? String(arr.length) : "";
         }
         
         if (!arr.length) {
           const empty = document.createElement("div");
           empty.style.cssText = "padding: 60px 20px; text-align: center; color: #999; font-size: 13px; background: #fff;";
-          empty.innerHTML = '<div style="margin-bottom: 8px; font-size: 32px; opacity: 0.5;">💬</div><div>还没有人发表评论</div>';
+          empty.innerHTML = `<div style="margin-bottom: 8px; font-size: 32px; opacity: 0.5;">💬</div><div>${TEXT.empty}</div>`;
           listEl.appendChild(empty);
           return;
         }
@@ -536,7 +589,7 @@
           item.className = "na-comment-card";
           Object.assign(item.style, {
             padding: "12px",
-            marginBottom: "0", // gap 由父容器控制
+            marginBottom: "0", // gap is controlled by the parent container
             background: "#fff",
             borderRadius: "8px",
             border: "1px solid #eee",
@@ -556,19 +609,19 @@
               });
           }
           
-          // 用户信息行
+          // User info row
           const userRow = document.createElement("div");
           userRow.style.cssText = "display: flex; align-items: center; margin-bottom: 8px;";
           
-          // 用户头像 (多彩)
+          // User avatar (colourful)
           const avatar = document.createElement("div");
-          const name = c.userName || c.userId || "匿名";
+          const name = c.userName || c.userId || TEXT.anonymous;
           const firstChar = name.length > 0 ? name.charAt(0).toUpperCase() : "?";
           
-          // 根据名字生成固定颜色
+          // Derive a stable colour from the name
           let hash = 0;
           for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-          const hue = hash % 360;
+          const hue = Math.abs(hash) % 360;
           
           avatar.style.cssText = `
             width: 32px;
@@ -593,41 +646,38 @@
           const userName = document.createElement("span");
           userName.style.cssText = "font-weight: 600; color: #333; font-size: 13px; display: flex; align-items: center; gap: 6px;";
           
-          // 用户名文本
+          // Username text
           const nameText = document.createElement("span");
           nameText.textContent = name;
           userName.appendChild(nameText);
           
-          // 已拉黑标记（管理员/作者可见）
+          // Banned badge (visible to admins and authors)
           const isUserBanned = c.userId && bannedUserIds.has(c.userId);
           if ((isAdmin || isAuthor) && isUserBanned) {
             const bannedBadge = document.createElement("span");
-            bannedBadge.textContent = "已拉黑";
+            bannedBadge.textContent = TEXT.banned;
             bannedBadge.style.cssText = "font-size: 10px; color: #fff; background: #bd1c2b; padding: 1px 6px; border-radius: 10px; font-weight: 500;";
             userName.appendChild(bannedBadge);
           }
           
           const meta = document.createElement("span");
           meta.style.cssText = "font-size: 11px; color: #999; margin-top: 2px;";
-          const date = c.createdAt ? new Date(c.createdAt).toLocaleString("zh-CN", {
-            month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
-          }) : "";
-          meta.textContent = date;
+          meta.textContent = formatCommentTime(c.createdAt);
           
           userInfo.appendChild(userName);
           userInfo.appendChild(meta);
           userRow.appendChild(avatar);
           userRow.appendChild(userInfo);
           
-          // 评论内容
+          // Comment body
           const content = document.createElement("div");
           content.style.cssText = "color: #444; font-size: 14px; line-height: 1.6; word-break: break-word; padding-left: 42px;";
           
-          // 处理引用内容 (简单markdown blockquote)
+          // Handle quoted content (simple markdown blockquote)
           let contentText = c.content || '';
-          const MAX_LENGTH = 150; // 超过150字符折叠
+          const MAX_LENGTH = 150; // collapse beyond 150 characters
           
-          // 创建可折叠的内容显示
+          // Build the collapsible content display
           function createCollapsibleContent(text, container) {
               if (text.length > MAX_LENGTH) {
                   const shortText = text.slice(0, MAX_LENGTH) + '...';
@@ -635,7 +685,7 @@
                   textNode.textContent = shortText;
                   
                   const expandBtn = document.createElement('span');
-                  expandBtn.textContent = ' 展开';
+                  expandBtn.textContent = ' ' + TEXT.expand;
                   expandBtn.style.cssText = 'color:#bd1c2b;cursor:pointer;font-size:12px;margin-left:4px;';
                   
                   let expanded = false;
@@ -643,7 +693,7 @@
                       e.stopPropagation();
                       expanded = !expanded;
                       textNode.textContent = expanded ? text : shortText;
-                      expandBtn.textContent = expanded ? ' 收起' : ' 展开';
+                      expandBtn.textContent = ' ' + (expanded ? TEXT.collapse : TEXT.expand);
                   };
                   
                   container.appendChild(textNode);
@@ -670,13 +720,13 @@
               createCollapsibleContent(contentText, content);
           }
           
-          // 操作栏（回复 + 点赞 + 删除）
+          // Action bar (reply, like, delete)
           const actionContainer = document.createElement("div");
           actionContainer.style.cssText = "display: flex; justify-content: flex-end; align-items: center; margin-top: 8px; padding-left: 42px; gap: 8px;";
           
-          // 回复按钮
+          // Reply button
           const replyBtn = document.createElement("button");
-          replyBtn.innerHTML = "💬 回复";
+          replyBtn.textContent = "💬 " + TEXT.reply;
           replyBtn.style.cssText = "border:none; background:transparent; cursor:pointer; color:#666; font-size:12px; transition:color 0.2s;";
           replyBtn.onmouseenter = () => replyBtn.style.color = "#bd1c2b";
           replyBtn.onmouseleave = () => replyBtn.style.color = "#666";
@@ -686,17 +736,17 @@
           };
           actionContainer.appendChild(replyBtn);
           
-          // 删除按钮（管理员或作者都可以删除）
+          // Delete button (admins and the note author may delete)
           if (isAdmin || isAuthor) {
             const delBtn = document.createElement("button");
-            delBtn.innerHTML = "🗑️";
-            delBtn.title = isAuthor ? "删除（作者）" : "删除（管理员）";
+            delBtn.textContent = "🗑️";
+            delBtn.title = isAuthor ? TEXT.deleteAuthor : TEXT.deleteAdmin;
             delBtn.style.cssText = "border:none; background:transparent; cursor:pointer; color:#aaa; font-size:14px; transition:color 0.2s;";
             delBtn.onmouseenter = () => delBtn.style.color = "#bd1c2b";
             delBtn.onmouseleave = () => delBtn.style.color = "#aaa";
             delBtn.onclick = async function(e) {
               e.stopPropagation();
-              if(!confirm("确定删除这条评论吗？")) return;
+              if(!confirm(TEXT.deleteConfirm)) return;
               try {
                  const deleteData = { siteId, workId, chapterId, commentId: c.id };
                  if (editToken) {
@@ -709,29 +759,29 @@
                      updateCommentCounts();
                      await loadComments(paraIndex, listEl, headerCountEl);
                  } else {
-                     alert(result.error || "删除失败");
+                     alert(result.error || TEXT.deleteFailed);
                  }
               } catch(e) { 
                  console.error(e);
-                 alert("删除失败");
+                 alert(TEXT.deleteFailed);
               }
             };
             actionContainer.appendChild(delBtn);
             
-            // 拉黑/解除拉黑按钮（管理员或作者可见，且不能拉黑自己）
+            // Ban / unban button (visible to admins and authors; you cannot ban yourself)
             if ((isAdmin || isAuthor) && c.userId && c.userId !== currentUserId) {
               const banBtn = document.createElement("button");
               let isBanned = isUserBanned;
               
-              // 更新按钮状态
+              // Refresh the button state
               function updateBanBtnState() {
                 if (isBanned) {
-                  banBtn.innerHTML = "✅";
-                  banBtn.title = "解除拉黑";
+                  banBtn.textContent = "✅";
+                  banBtn.title = TEXT.unbanTitle;
                   banBtn.style.color = "#52c41a";
                 } else {
-                  banBtn.innerHTML = "🚫";
-                  banBtn.title = "拉黑此用户";
+                  banBtn.textContent = "🚫";
+                  banBtn.title = TEXT.banTitle;
                   banBtn.style.color = "#aaa";
                 }
               }
@@ -751,8 +801,8 @@
                 
                 try {
                   if (isBanned) {
-                    // 解除拉黑
-                    if (!confirm(`确定解除拉黑用户 "${c.userName || c.userId}" 吗？`)) return;
+                    // Unban
+                    if (!confirm(TEXT.unbanConfirm(c.userName || c.userId))) return;
                     const result = await apiRequest(apiBase + "/api/v1/ban", {
                       method: "DELETE",
                       headers,
@@ -762,46 +812,46 @@
                       isBanned = false;
                       bannedUserIds.delete(c.userId);
                       updateBanBtnState();
-                      // 移除已拉黑标记
+                      // Remove the banned badge
                       const badge = userName.querySelector('span:last-child');
-                      if (badge && badge.textContent === '已拉黑') badge.remove();
-                      alert(`已解除拉黑 "${c.userName || c.userId}"`);
+                      if (badge && badge.textContent === TEXT.banned) badge.remove();
+                      alert(TEXT.unbanSuccess(c.userName || c.userId));
                     } else {
-                      alert(result.error || "解除拉黑失败");
+                      alert(result.error || TEXT.unbanFailed);
                     }
                   } else {
-                    // 拉黑
-                    const reason = prompt(`确定拉黑用户 "${c.userName || c.userId}" 吗？\n请输入拉黑原因（可选）：`);
+                    // Ban
+                    const reason = prompt(TEXT.banConfirm(c.userName || c.userId));
                     if (reason === null) return;
                     const result = await apiRequest(apiBase + "/api/v1/ban", {
                       method: "POST",
                       headers,
-                      body: JSON.stringify({ siteId, targetUserId: c.userId, reason: reason || "管理员拉黑" })
+                      body: JSON.stringify({ siteId, targetUserId: c.userId, reason: reason || TEXT.banReasonDefault })
                     });
                     if (result.success) {
                       isBanned = true;
                       bannedUserIds.add(c.userId);
                       updateBanBtnState();
-                      // 添加已拉黑标记
+                      // Add the banned badge
                       const bannedBadge = document.createElement("span");
-                      bannedBadge.textContent = "已拉黑";
+                      bannedBadge.textContent = TEXT.banned;
                       bannedBadge.style.cssText = "font-size: 10px; color: #fff; background: #bd1c2b; padding: 1px 6px; border-radius: 10px; font-weight: 500;";
                       userName.appendChild(bannedBadge);
-                      alert(`用户 "${c.userName || c.userId}" 已被拉黑`);
+                      alert(TEXT.banSuccess(c.userName || c.userId));
                     } else {
-                      alert(result.error || "拉黑失败");
+                      alert(result.error || TEXT.banFailed);
                     }
                   }
                 } catch(e) { 
                   console.error(e);
-                  alert(isBanned ? "解除拉黑失败" : "拉黑失败");
+                  alert(isBanned ? TEXT.unbanFailed : TEXT.banFailed);
                 }
               };
               actionContainer.appendChild(banBtn);
             }
           }
           
-          // 点赞按钮
+          // Like button
           const likeBtn = document.createElement("button");
           const likes = c.likes || 0;
           likeBtn.innerHTML = `<span style="font-size:14px">❤️</span> <span style="margin-left:4px; font-size:12px;">${likes || ''}</span>`;
@@ -815,7 +865,7 @@
               try {
                  const data = await apiPost(apiBase + "/api/v1/comments/like", { siteId, workId, chapterId, commentId: c.id });
                  
-                 if (data.error === 'already_liked') return alert("您已经点过赞了");
+                 if (data.error === 'already_liked') return alert(TEXT.alreadyLiked);
                  if (data.error) return alert(data.error);
 
                  if (data.likes !== undefined) {
@@ -831,7 +881,7 @@
           item.appendChild(content);
           item.appendChild(actionContainer);
           
-          // 显示回复（如果有，超过2条折叠）
+          // Show replies (collapsed when there are more than two)
           if (c.replies && c.replies.length > 0) {
             const repliesContainer = document.createElement("div");
             repliesContainer.style.cssText = "margin-top: 12px; padding-left: 42px; border-left: 2px solid #eee;";
@@ -840,13 +890,13 @@
             const replies = c.replies;
             
             if (replies.length > MAX_VISIBLE_REPLIES) {
-              // 先显示前2条
+              // Show the first two replies
               replies.slice(0, MAX_VISIBLE_REPLIES).forEach(reply => {
                 const replyItem = createReplyItem(reply, paraIndex, listEl, headerCountEl, isAdmin, isAuthor, token, editToken);
                 repliesContainer.appendChild(replyItem);
               });
               
-              // 隐藏的回复容器
+              // Container for the hidden replies
               const hiddenReplies = document.createElement("div");
               hiddenReplies.style.display = "none";
               replies.slice(MAX_VISIBLE_REPLIES).forEach(reply => {
@@ -855,18 +905,18 @@
               });
               repliesContainer.appendChild(hiddenReplies);
               
-              // 展开/收起按钮
+              // Expand / collapse toggle
               const toggleBtn = document.createElement("div");
               toggleBtn.style.cssText = "color:#bd1c2b;font-size:12px;cursor:pointer;padding:8px 0;";
-              toggleBtn.textContent = `展开 ${replies.length - MAX_VISIBLE_REPLIES} 条回复 ▼`;
+              toggleBtn.textContent = TEXT.showReplies(replies.length - MAX_VISIBLE_REPLIES);
               toggleBtn.onclick = (e) => {
                 e.stopPropagation();
                 if (hiddenReplies.style.display === "none") {
                   hiddenReplies.style.display = "block";
-                  toggleBtn.textContent = "收起回复 ▲";
+                  toggleBtn.textContent = TEXT.hideReplies;
                 } else {
                   hiddenReplies.style.display = "none";
-                  toggleBtn.textContent = `展开 ${replies.length - MAX_VISIBLE_REPLIES} 条回复 ▼`;
+                  toggleBtn.textContent = TEXT.showReplies(replies.length - MAX_VISIBLE_REPLIES);
                 }
               };
               repliesContainer.appendChild(toggleBtn);
@@ -884,15 +934,15 @@
         });
       }
       
-      // 创建回复项
+      // Build a reply item
       function createReplyItem(reply, paraIndex, listEl, headerCountEl, isAdmin, isAuthor, token, editToken) {
         const item = document.createElement("div");
         item.style.cssText = "padding: 8px 0; border-bottom: 1px solid #f5f5f5;";
         
-        const name = reply.userName || reply.userId || "匿名";
+        const name = reply.userName || reply.userId || TEXT.anonymous;
         let hash = 0;
         for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-        const hue = hash % 360;
+        const hue = Math.abs(hash) % 360;
         
         const header = document.createElement("div");
         header.style.cssText = "display: flex; align-items: center; margin-bottom: 4px;";
@@ -907,7 +957,7 @@
         
         const time = document.createElement("span");
         time.style.cssText = "font-size: 10px; color: #999; margin-left: 8px;";
-        time.textContent = reply.createdAt ? new Date(reply.createdAt).toLocaleString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+        time.textContent = formatCommentTime(reply.createdAt);
         
         header.append(avatar, userName, time);
         
@@ -917,7 +967,7 @@
         
         item.append(header, content);
         
-        // 递归显示嵌套回复
+        // Recursively render nested replies
         if (reply.replies && reply.replies.length > 0) {
           const nested = document.createElement("div");
           nested.style.cssText = "margin-left: 26px; margin-top: 8px;";
@@ -930,9 +980,9 @@
         return item;
       }
       
-      // 显示回复输入框
+      // Show the reply input box
       function showReplyInput(parentItem, parentComment, paraIndex, listEl, headerCountEl) {
-        // 移除已有的回复框
+        // Remove any existing reply box
         const existing = parentItem.querySelector(".reply-input-box");
         if (existing) {
           existing.remove();
@@ -944,26 +994,26 @@
         box.style.cssText = "margin-top: 10px; padding: 10px; background: #f9f9f9; border-radius: 6px; margin-left: 42px;";
         
         const textarea = document.createElement("textarea");
-        textarea.placeholder = `回复 ${parentComment.userName || '匿名'}...`;
+        textarea.placeholder = TEXT.replyPlaceholder(parentComment.userName || TEXT.anonymous);
         textarea.style.cssText = "width: 100%; height: 60px; border: 1px solid #ddd; border-radius: 4px; padding: 8px; font-size: 13px; resize: none; box-sizing: border-box; user-select: text; -webkit-user-select: text;";
         
         const btnRow = document.createElement("div");
         btnRow.style.cssText = "display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;";
         
         const cancelBtn = document.createElement("button");
-        cancelBtn.textContent = "取消";
+        cancelBtn.textContent = TEXT.cancel;
         cancelBtn.style.cssText = "padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;";
         cancelBtn.onclick = () => box.remove();
         
         const submitBtn = document.createElement("button");
-        submitBtn.textContent = "回复";
+        submitBtn.textContent = TEXT.replySubmit;
         submitBtn.style.cssText = "padding: 6px 12px; border: none; background: #bd1c2b; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;";
         submitBtn.onclick = async () => {
           const content = textarea.value.trim();
           if (!content) return;
           
           try {
-            submitBtn.textContent = "发送中...";
+            submitBtn.textContent = TEXT.replySubmitting;
             submitBtn.disabled = true;
             
             await apiPost(apiBase + "/api/v1/comments", {
@@ -981,8 +1031,8 @@
             await loadComments(paraIndex, listEl, headerCountEl);
           } catch (e) {
             console.error("reply failed", e);
-            alert("回复失败");
-            submitBtn.textContent = "回复";
+            alert(TEXT.replyFailed);
+            submitBtn.textContent = TEXT.replySubmit;
             submitBtn.disabled = false;
           }
         };
@@ -993,7 +1043,7 @@
         textarea.focus();
       }
 
-      // 更新段落评论数显示
+      // Refresh the per-paragraph comment counts
       function updateCommentCounts() {
         paras.forEach(function (p, idx) {
           const count = (allCommentsData || {})[String(idx)]?.length || 0;
@@ -1004,13 +1054,13 @@
             p.appendChild(badge);
           }
 
-          // 样式逻辑：默认为灰色，只有当前选中段落(currentParaIndex)才显示红色
+          // Styling rule: grey by default, red only for the currently selected paragraph
           const isActive = (currentParaIndex === idx);
           
-          // 统一风格：全部显示数字，不再使用 emoji
-          // 未选中：灰色(#999)，选中：红色(#f56c6c)
+          // Consistent style: always show the number, no emoji
+          // Inactive: grey (#999), active: red (#f56c6c)
           const color = isActive ? "#f56c6c" : "#999";
-          const borderColor = isActive ? "#f56c6c" : "#e0e0e0"; // 平时边框淡一点
+          const borderColor = isActive ? "#f56c6c" : "#e0e0e0"; // lighter border while idle
           
           Object.assign(badge.style, {
             display: "inline-block",
@@ -1034,9 +1084,9 @@
           });
           
           badge.textContent = count;
-          badge.title = count + " 条评论";
+          badge.title = TEXT.commentCount(count);
           
-          // 移除之前的特殊样式 override
+          // Remove earlier special-case styling overrides
           badge.style.fontSize = isMobile ? "11px" : "10px";
           
           if (!isMobile) {
@@ -1052,20 +1102,20 @@
         });
       }
 
-      // 为每个段落添加点击事件和评论数显示
+      // Attach click handlers and comment counters to every paragraph
       paras.forEach(function (p, idx) {
         p.dataset.naIndex = String(idx);
         Object.assign(p.style, {
           cursor: "pointer",
           position: "relative",
-          padding: isMobile ? "8px 0" : "4px 0", // 移动端增大点击区域
+          padding: isMobile ? "8px 0" : "4px 0", // larger tap target on mobile
           borderRadius: "4px",
           transition: "all 0.2s",
-          WebkitTapHighlightColor: "transparent", // 移除移动端点击高亮
-          touchAction: "manipulation", // 移动端优化触摸
+          WebkitTapHighlightColor: "transparent", // remove the mobile tap highlight
+          touchAction: "manipulation", // smoother touch handling on mobile
         });
 
-        // 桌面端 hover 效果（更柔和）
+        // Subtle hover state on desktop
         if (!isMobile) {
           p.addEventListener("mouseenter", function () {
             if (currentParaIndex !== idx) {
@@ -1080,18 +1130,18 @@
           });
         }
 
-        // 统一的点击/触摸处理
+        // Shared click / touch handler
         const handleClick = async function (e) {
-          // 如果点击的是链接或交互元素，优先处理原有行为，不触发评论
+          // Links and interactive elements keep their own behaviour and do not trigger comments
           if (e.target.closest("a, button, input, textarea, select, [role='button']")) return;
 
-          // 移除之前选中段落的下划线
+          // Clear the underline on the previously selected paragraph
           if (currentParaIndex !== null && paras[currentParaIndex]) {
             paras[currentParaIndex].style.textDecoration = "none";
             paras[currentParaIndex].style.background = "transparent";
           }
 
-          // 如果点击的是当前已经打开的段落，则执行关闭逻辑
+          // Clicking the paragraph that is already open closes the panel
           if (currentParaIndex === idx && sidebar.container.style.display !== "none") {
               currentParaIndex = null;
               updateCommentCounts();
@@ -1103,7 +1153,7 @@
               return;
           }
           
-          // 给当前段落加下划线（起点风格：红色下划线）
+          // Underline the selected paragraph (red underline)
           currentParaIndex = idx;
           p.style.textDecoration = "underline";
           p.style.textDecorationColor = "#f56c6c";
@@ -1111,31 +1161,31 @@
           p.style.textUnderlineOffset = "2px";
           p.style.background = "transparent";
           
-          // 更新所有徽章样式（当前选中的变红）
+          // Refresh every badge (the selected one turns red)
           updateCommentCounts();
 
-          // 显示侧边栏和遮罩
+          // Show the sidebar and the overlay
           sidebar.container.style.display = "flex";
           if (isMobile) {
             overlay.style.display = "block";
             document.body.style.overflow = "hidden";
-            // 移动端滚动到顶部
+            // Scroll the mobile panel back to the top
             sidebar.container.scrollTop = 0;
           }
           await loadComments(idx, sidebar.list, sidebar.headerCount);
         };
 
         p.onclick = handleClick;
-        // 移动端也支持 touchstart（防止双击缩放）
+        // Mobile also listens for touchstart (prevents double-tap zoom)
         if (isMobile) {
           p.addEventListener("touchend", function (e) {
-            // e.preventDefault(); // 保持默认行为以免影响选中
+            // e.preventDefault(); // keep the default so text selection still works
             // handleClick(e);
           }, { passive: false });
         }
       });
 
-      // 初始化：加载所有评论并更新计数
+      // Bootstrap: load every comment and refresh the counters
       loadAllComments().then(function () {
         updateCommentCounts();
       });

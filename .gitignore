@@ -38,6 +38,18 @@ htmlcov/
 nosetests.xml
 *.pytest_cache/
 
+# Local test scaffolding (temporary installs / scratch checks)
+testdeps/
+.testvenv/
+.piptmp/
+.wheels/
+.baseline/
+.baseline.tar
+.migtest.sqlite3
+.render_check.mjs
+.check_*.py
+t.txt
+
 # Static and media files (if not tracked)
 staticfiles/
 

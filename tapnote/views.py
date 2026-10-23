@@ -16,10 +16,10 @@ import re
 import secrets
 
 MAX_CONTENT_LENGTH = 200000
-MAX_COMMENT_LENGTH = 10000  # 评论内容最大长度
-MAX_CONTEXT_TEXT_LENGTH = 100  # 上下文指纹最大长度
-MAX_ID_LENGTH = 100  # ID字段最大长度
-MAX_PARA_INDEX = 100000  # 段落索引最大值（防止DoS）
+MAX_COMMENT_LENGTH = 10000  # Maximum comment length
+MAX_CONTEXT_TEXT_LENGTH = 100  # Maximum context fingerprint length
+MAX_ID_LENGTH = 100  # Maximum ID field length
+MAX_PARA_INDEX = 100000  # Maximum paragraph index (DoS guard)
 
 def constant_time_compare(val1, val2):
     """Constant-time string comparison to prevent timing attacks."""
@@ -148,8 +148,8 @@ def api_comments(request):
                 context_text = context_text.strip()
                 
             # Identity logic
-            DEFAULT_ANONYMOUS_NAME = "匿名"
-            GUEST_NAME_PREFIX = "访客-"
+            DEFAULT_ANONYMOUS_NAME = "Anonymous"
+            GUEST_NAME_PREFIX = "Guest-"
             
             user_name = DEFAULT_ANONYMOUS_NAME
             user_id = None

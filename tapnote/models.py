@@ -55,7 +55,7 @@ class Comment(models.Model):
     chapter_id = models.CharField(max_length=100)
     para_index = models.IntegerField()
     content = models.TextField()
-    user_name = models.CharField(max_length=100, default="匿名")
+    user_name = models.CharField(max_length=100, default="Anonymous")
     user_id = models.CharField(max_length=100, null=True, blank=True)
     user_avatar = models.CharField(max_length=255, null=True, blank=True)
     context_text = models.TextField(null=True, blank=True)
