@@ -1,9 +1,24 @@
 /* Base styles */
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 body {
     font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 /* Per-note typography. The note page sets data-font on its container. */
+[data-font] {
+    min-width: 0;
+    max-width: 100%;
+}
 [data-font="ibm-plex"] {
     font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
@@ -129,4 +144,103 @@ body {
 .markdown-content td {
     border: 1px solid #ccc;
     padding: 0.5em;
-} 
+}
+
+/* ---------------------------------------------------------------------------
+   Long words, pasted URLs, links and media must never widen the page.
+   Everything wraps inside the reading column instead.
+   --------------------------------------------------------------------------- */
+
+.markdown-content {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: break-word;
+}
+
+.markdown-content p,
+.markdown-content li,
+.markdown-content blockquote,
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6,
+.markdown-content th,
+.markdown-content td {
+    overflow-wrap: break-word;
+}
+
+/* URLs have no natural break points, so allow them to split anywhere. */
+.markdown-content a,
+.markdown-content a * {
+    overflow-wrap: anywhere;
+}
+
+/* The note title/byline sit outside .markdown-content. */
+[data-font] header,
+[data-font] header h1,
+[data-font] header a,
+[data-font] header span,
+[data-font-preview-pane] header,
+[data-font-preview-pane] header h1,
+[data-font-preview-pane] header a,
+[data-font-preview-pane] header span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* Inline code can contain one very long token; let it break when needed. */
+.markdown-content :not(pre) > code {
+    overflow-wrap: anywhere;
+}
+
+.markdown-content img,
+.markdown-content iframe,
+.markdown-content video {
+    max-width: 100%;
+}
+
+.markdown-content img,
+.markdown-content video {
+    height: auto;
+}
+
+.markdown-content iframe {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Small screens: wrap code and tables too, so a note never needs sideways
+   scrolling just to read it.
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+    .markdown-content pre {
+        white-space: pre-wrap;
+        overflow-x: hidden;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .markdown-content pre code {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    .markdown-content :not(pre) > code {
+        white-space: pre-wrap;
+    }
+
+    .markdown-content table {
+        table-layout: fixed;
+    }
+
+    .markdown-content th,
+    .markdown-content td {
+        overflow-wrap: anywhere;
+    }
+}

@@ -25,9 +25,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8 max-w-3xl" data-font="{{ note_font }}">
+<div class="container mx-auto px-5 sm:px-6 py-8 max-w-3xl" data-font="{{ note_font }}">
     {% if can_edit %}
-    <div class="flex justify-end mb-8 space-x-4">
+    <div class="flex flex-wrap justify-end gap-2 mb-8">
         <button onclick="copyEditLink()" class="text-gray-400 hover:text-gray-600 transition-colors text-sm" title="Copy link to restore edit access">
             Backup Edit Link
         </button>
@@ -46,11 +46,11 @@
     {% endif %}
     
     {% if note.title or note.author %}
-    <header class="mb-8 border-b border-gray-100 pb-8">
+    <header class="mb-6 border-b border-gray-100 pb-6 sm:mb-8 sm:pb-8">
         {% if note.title %}
-        <h1 class="text-3xl md:text-4xl font-bold mb-4 text-gray-900 leading-tight">{{ note.title }}</h1>
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-gray-900 leading-tight break-words">{{ note.title }}</h1>
         {% endif %}
-        <div class="flex items-center text-sm text-gray-500 space-x-3">
+        <div class="flex flex-wrap items-center text-sm text-gray-500 gap-x-3 gap-y-1">
             {% if note.author %}
             <span class="font-bold text-gray-700">{{ note.author }}</span>
             <span>&middot;</span>
