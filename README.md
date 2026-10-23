@@ -135,7 +135,7 @@ Feel free to submit a Pull Request. For major changes, please open an issue firs
 - Originally based on concepts from [vorniches/tapnote](https://github.com/vorniches/tapnote)
 - Built with Django and Tailwind CSS
 - Uses [Prototype](https://github.com/vorniches/prototype), [snap2txt](https://github.com/vorniches/snap2txt) and [Cursor](https://cursor.so)
-- Uses Space Mono font by Google Fonts
+- Note typography is chosen per note: Newsreader (default), IBM Plex Sans, or EB Garamond, all by Google Fonts
 - Comment system powered by [ParaNote](https://github.com/zoidberg-xgd/paranote)
 
 ## Support

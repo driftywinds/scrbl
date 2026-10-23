@@ -136,7 +136,7 @@ python manage.py test
 - 最初基于 [vorniches/tapnote](https://github.com/vorniches/tapnote) 的概念
 - 使用 Django 和 Tailwind CSS 构建
 - 使用 [Prototype](https://github.com/vorniches/prototype)、[snap2txt](https://github.com/vorniches/snap2txt) 和 [Cursor](https://cursor.so)
-- 使用 Google Fonts 的 Space Mono 字体
+- 笔记字体可选：Newsreader（默认）、IBM Plex Sans 或 EB Garamond，均由 Google Fonts 提供
 - 评论系统由 [ParaNote](https://github.com/zoidberg-xgd/paranote) 提供支持
 
 ## 支持

@@ -12,6 +12,7 @@ from django.db import models
 from django.conf import settings
 from .models import Note, Comment, LikeRecord, BannedUser, TelegraphAccount
 from .telegraph import nodes_to_markdown, markdown_to_nodes
+from .fonts import DEFAULT_FONT, FONTS, FONT_CHOICES, normalize_font
 import re
 import secrets
 
@@ -415,7 +416,10 @@ def home(request):
     # If no users exist, redirect to setup page
     if not User.objects.exists():
         return redirect('setup_admin')
-    return render(request, 'tapnote/editor.html')
+    return render(request, 'tapnote/editor.html', {
+        'fonts': FONT_CHOICES,
+        'selected_font': DEFAULT_FONT,
+    })
 
 @csrf_exempt
 def setup_admin(request):
@@ -442,14 +446,19 @@ def publish(request):
         title = request.POST.get('title', '').strip()
         author = request.POST.get('author', '').strip()
         link_target = request.POST.get('link_target', '_self')
+        font = normalize_font(request.POST.get('font'))
         
         if len(content) > MAX_CONTENT_LENGTH:
             return render(request, 'tapnote/editor.html', {
                 'error': f'Content exceeds the limit of {MAX_CONTENT_LENGTH} characters.',
-                'note': {'content': content, 'title': title, 'author': author, 'link_target': link_target}
+                'note': {'content': content, 'title': title, 'author': author, 'link_target': link_target},
+                'fonts': FONT_CHOICES,
+                'selected_font': font,
             })
         if content:
-            note = Note.objects.create(content=content, title=title, author=author, link_target=link_target)
+            note = Note.objects.create(
+                content=content, title=title, author=author, link_target=link_target, font=font
+            )
             response = redirect('view_note', hashcode=note.hashcode)
             # Set cookie with SameSite=Lax for robustness
             response.set_cookie(f'edit_token_{note.hashcode}', note.edit_token, max_age=31536000, samesite='Lax')
@@ -520,6 +529,10 @@ def view_note(request, hashcode):
         # img_match.group(1) is markdown url, group(2) is html src
         meta_image = img_match.group(1) or img_match.group(2)
 
+    # Typography for this note
+    note_font = normalize_font(note.font)
+    extra_font_family = "" if note_font == DEFAULT_FONT else FONTS[note_font]["google_family"]
+
     # Auto-refresh/set cookie if valid URL token is provided
     # This ensures robustness: if user visits with token link, browser remembers permission
     if url_token and token_is_valid:
@@ -531,6 +544,8 @@ def view_note(request, hashcode):
             'meta_description': meta_description,
             'meta_image': meta_image,
             'enable_comments': settings.ENABLE_COMMENTS,
+            'note_font': note_font,
+            'extra_font_family': extra_font_family,
         })
         response.set_cookie(f'edit_token_{note.hashcode}', note.edit_token, max_age=31536000, samesite='Lax')
     else:
@@ -542,6 +557,8 @@ def view_note(request, hashcode):
             'meta_description': meta_description,
             'meta_image': meta_image,
             'enable_comments': settings.ENABLE_COMMENTS,
+            'note_font': note_font,
+            'extra_font_family': extra_font_family,
         })
         
     # Increment views
@@ -572,11 +589,14 @@ def edit_note(request, hashcode):
         title = request.POST.get('title', '').strip()
         author = request.POST.get('author', '').strip()
         link_target = request.POST.get('link_target', '_self')
+        font = normalize_font(request.POST.get('font'))
         
         if len(content) > MAX_CONTENT_LENGTH:
             return render(request, 'tapnote/editor.html', {
                 'note': note,
-                'error': f'Content exceeds the limit of {MAX_CONTENT_LENGTH} characters.'
+                'error': f'Content exceeds the limit of {MAX_CONTENT_LENGTH} characters.',
+                'fonts': FONT_CHOICES,
+                'selected_font': font,
             })
             
         if content:
@@ -584,13 +604,18 @@ def edit_note(request, hashcode):
             note.title = title
             note.author = author
             note.link_target = link_target
+            note.font = font
             note.save()
             response = redirect('view_note', hashcode=note.hashcode)
             # Refresh cookie on edit
             response.set_cookie(f'edit_token_{note.hashcode}', note.edit_token, max_age=31536000, samesite='Lax')
             return response
     
-    return render(request, 'tapnote/editor.html', {'note': note})
+    return render(request, 'tapnote/editor.html', {
+        'note': note,
+        'fonts': FONT_CHOICES,
+        'selected_font': normalize_font(note.font),
+    })
 
 def handler404(request, exception):
     return render(request, 'tapnote/404.html', status=404)
@@ -610,6 +635,7 @@ def export_data(request):
             'title': note.title,
             'author': note.author,
             'link_target': note.link_target,
+            'font': note.font,
             'edit_token': note.edit_token,
             'created_at': note.created_at.isoformat(),
             'updated_at': note.updated_at.isoformat(),
@@ -638,6 +664,8 @@ def import_data(request):
                 }
                 if 'link_target' in item:
                     defaults['link_target'] = item['link_target']
+                if 'font' in item:
+                    defaults['font'] = normalize_font(item['font'])
                 if 'created_at' in item:
                     defaults['created_at'] = parse_datetime(item['created_at'])
                 

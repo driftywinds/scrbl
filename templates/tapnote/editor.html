@@ -32,7 +32,19 @@
             style="height:auto; overflow-y:hidden;"
             placeholder="Your story..."
         >{% if note %}{{ note.content }}{% endif %}</textarea>
-        <div class="flex justify-end">
+        <div class="flex items-center justify-between gap-4">
+            <label class="flex items-center gap-2 text-sm text-gray-500" for="font">
+                <span>Font</span>
+                <select 
+                    name="font" 
+                    id="font"
+                    class="px-3 py-2 border border-gray-300 rounded-full bg-white text-gray-700 focus:outline-none focus:border-black"
+                >
+                    {% for value, label in fonts %}
+                    <option value="{{ value }}"{% if value == selected_font %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </label>
             <button type="submit" class="px-6 py-2 border border-black rounded-full hover:bg-black hover:text-white transition-colors">
                 {% if note %}Update{% else %}Publish{% endif %}
             </button>

@@ -1,6 +1,19 @@
 /* Base styles */
 body {
-    font-family: 'Space Mono', monospace;
+    font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
+}
+
+/* Per-note typography. The note page sets data-font on its container. */
+[data-font="newsreader"] {
+    font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
+}
+
+[data-font="ibm-plex"] {
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+[data-font="eb-garamond"] {
+    font-family: 'EB Garamond', Garamond, Georgia, serif;
 }
 
 /* Markdown content styles */
@@ -39,8 +52,10 @@ body {
     overflow-x: auto;
 }
 
-.markdown-content code {
-    font-family: 'Space Mono', monospace;
+/* Code stays monospace regardless of the note's chosen reading font */
+.markdown-content code,
+.markdown-content pre {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
 }
 
 .markdown-content a {
