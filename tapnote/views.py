@@ -513,6 +513,9 @@ def view_note(request, hashcode):
         if candidate_title:
             meta_title = candidate_title[:60]
 
+    # Browser tab title: "<heading> • scrbl"
+    page_title = f"{meta_title} \u2022 scrbl" if meta_title and meta_title != "scrbl" else "scrbl"
+
     # Determine Description
     if lines:
         if note.title:
@@ -552,6 +555,7 @@ def view_note(request, hashcode):
             'enable_comments': settings.ENABLE_COMMENTS,
             'note_font': note_font,
             'extra_font_family': extra_font_family,
+            'page_title': page_title,
         })
         response.set_cookie(f'edit_token_{note.hashcode}', note.edit_token, max_age=31536000, samesite='Lax')
     else:
@@ -565,6 +569,7 @@ def view_note(request, hashcode):
             'enable_comments': settings.ENABLE_COMMENTS,
             'note_font': note_font,
             'extra_font_family': extra_font_family,
+            'page_title': page_title,
         })
         
     # Increment views
