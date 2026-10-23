@@ -47,4 +47,5 @@ urlpatterns = [
     path('getPage/<str:path>', views.api_get_page, name='api_get_page_with_path'),
     path('<str:hashcode>/', views.view_note, name='view_note'),
     path('<str:hashcode>/edit/', views.edit_note, name='edit_note'),
+    path('<str:hashcode>/delete/', views.delete_note, name='delete_note'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

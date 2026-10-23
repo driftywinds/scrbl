@@ -249,8 +249,82 @@ body {
    Dark mode
    --------------------------------------------------------------------------- */
 
+:root {
+    --na-panel-bg: #f7f7f7;
+    --na-list-bg: #f7f7f7;
+    --na-card-bg: #ffffff;
+    --na-text: #333333;
+    --na-body-text: #444444;
+    --na-meta: #999999;
+    --na-action: #666666;
+    --na-icon: #aaaaaa;
+    --na-reply-text: #555555;
+    --na-border: #dbdbdb;
+    --na-subtle-border: #eeeeee;
+    --na-input-bg: #ffffff;
+    --na-input-border: #dddddd;
+    --na-placeholder: #999999;
+    --na-hover-bg: #f0f0f0;
+    --na-empty-bg: #ffffff;
+    --na-badge-bg: #eeeeee;
+    --na-badge-text: #666666;
+    --na-quote-bg: #f9f9f9;
+    --na-quote-text: #777777;
+    --na-reply-box-bg: #f9f9f9;
+    --na-secondary-bg: #ffffff;
+    --na-secondary-border: #dddddd;
+    --na-like-hover: #fff0f0;
+    --na-para-hover: rgba(0, 0, 0, 0.02);
+    --na-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --na-card-hover-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    --na-avatar-border: rgba(0, 0, 0, 0.05);
+    --na-sidebar-shadow-mobile: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    --na-sidebar-shadow-desktop: -2px 0 12px rgba(0, 0, 0, 0.05);
+    --na-primary: #bd1c2b;
+    --na-count-bg: #ffffff;
+    --na-count-border: #e0e0e0;
+    --na-count-text: #999999;
+}
+
 html.dark {
     color-scheme: dark;
+    --na-panel-bg: #111111;
+    --na-list-bg: #0b0b0b;
+    --na-card-bg: #1a1a1a;
+    --na-text: #f5f5f5;
+    --na-body-text: #d4d4d4;
+    --na-meta: #9ca3af;
+    --na-action: #b3b3b3;
+    --na-icon: #9ca3af;
+    --na-reply-text: #d4d4d4;
+    --na-border: #333333;
+    --na-subtle-border: #2a2a2a;
+    --na-input-bg: #111111;
+    --na-input-border: #444444;
+    --na-placeholder: #6b7280;
+    --na-hover-bg: #262626;
+    --na-empty-bg: #111111;
+    --na-badge-bg: #262626;
+    --na-badge-text: #d4d4d4;
+    --na-quote-bg: #1f1f1f;
+    --na-quote-text: #b3b3b3;
+    --na-reply-box-bg: #202020;
+    --na-secondary-bg: #1a1a1a;
+    --na-secondary-border: #444444;
+    --na-like-hover: rgba(189, 28, 43, 0.18);
+    --na-para-hover: rgba(255, 255, 255, 0.04);
+    --na-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --na-card-hover-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    --na-avatar-border: rgba(255, 255, 255, 0.12);
+    --na-sidebar-shadow-mobile: 0 -4px 20px rgba(0, 0, 0, 0.6);
+    --na-sidebar-shadow-desktop: -2px 0 12px rgba(0, 0, 0, 0.5);
+    --na-count-bg: #111111;
+    --na-count-border: #333333;
+    --na-count-text: #9ca3af;
+}
+
+.na-sidebar textarea::placeholder {
+    color: var(--na-placeholder);
 }
 
 body {

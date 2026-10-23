@@ -185,15 +185,14 @@
         const container = document.createElement("div");
         container.className = "na-sidebar";
         
-        // Hypothesis-style palette
+        // Hypothesis-style palette. The CSS variables flip with the app theme.
         const styles = {
-            bg: "#f7f7f7",
-            cardBg: "#ffffff",
-            text: "#333",
-            meta: "#707070",
-            border: "#dbdbdb",
-            primary: "#bd1c2b", // Hypothesis red
-            shadow: "0 4px 12px rgba(0,0,0,0.15)"
+            bg: "var(--na-panel-bg)",
+            cardBg: "var(--na-card-bg)",
+            text: "var(--na-text)",
+            meta: "var(--na-meta)",
+            border: "var(--na-border)",
+            primary: "var(--na-primary)"
         };
 
         // Inject keyframe animations
@@ -217,7 +216,7 @@
             borderTop: `1px solid ${styles.border}`,
             borderTopLeftRadius: "12px",
             borderTopRightRadius: "12px",
-            boxShadow: "0 -4px 20px rgba(0,0,0,0.15)",
+            boxShadow: "var(--na-sidebar-shadow-mobile)",
             fontSize: "14px",
             display: "none",
             flexDirection: "column",
@@ -235,7 +234,7 @@
             height: "100vh", // full height
             background: styles.bg,
             borderLeft: `1px solid ${styles.border}`,
-            boxShadow: "-2px 0 12px rgba(0,0,0,0.05)",
+            boxShadow: "var(--na-sidebar-shadow-desktop)",
             fontSize: "14px",
             display: "none",
             flexDirection: "column",
@@ -273,8 +272,8 @@
         const countSpan = document.createElement("span");
         countSpan.className = "na-comment-header-count";
         Object.assign(countSpan.style, {
-            background: "#eee",
-            color: "#666",
+            background: "var(--na-badge-bg)",
+            color: "var(--na-badge-text)",
             padding: "2px 8px",
             borderRadius: "10px",
             fontSize: "12px",
@@ -291,13 +290,13 @@
           background: "transparent",
           border: "none",
           cursor: "pointer",
-          color: "#999",
+          color: "var(--na-meta)",
           padding: "4px",
           display: "flex",
           borderRadius: "4px",
           transition: "background 0.2s"
         });
-        closeBtn.onmouseenter = () => closeBtn.style.background = "#f0f0f0";
+        closeBtn.onmouseenter = () => closeBtn.style.background = "var(--na-hover-bg)";
         closeBtn.onmouseleave = () => closeBtn.style.background = "transparent";
         closeBtn.onclick = function () {
           container.style.display = "none";
@@ -319,7 +318,7 @@
           padding: "16px",
           flex: "1",
           overflowY: "auto",
-          background: "#f7f7f7", // grey background
+          background: "var(--na-list-bg)", // grey background
           display: "flex",
           flexDirection: "column",
           gap: "12px" // card spacing
@@ -341,10 +340,12 @@
           minHeight: "80px",
           boxSizing: "border-box",
           padding: "12px",
-          border: `1px solid ${styles.border}`,
+          border: `1px solid var(--na-input-border)`,
           borderRadius: "6px",
           fontSize: "14px",
           fontFamily: "inherit",
+          background: "var(--na-input-bg)",
+          color: "var(--na-text)",
           resize: "vertical",
           outline: "none",
           transition: "border-color 0.2s, box-shadow 0.2s",
@@ -357,7 +358,7 @@
             textarea.style.boxShadow = `0 0 0 2px rgba(189, 28, 43, 0.1)`;
         };
         textarea.onblur = () => {
-            textarea.style.borderColor = styles.border;
+            textarea.style.borderColor = "var(--na-input-border)";
             textarea.style.boxShadow = "none";
         };
 
@@ -575,7 +576,7 @@
         
         if (!arr.length) {
           const empty = document.createElement("div");
-          empty.style.cssText = "padding: 60px 20px; text-align: center; color: #999; font-size: 13px; background: #fff;";
+          empty.style.cssText = "padding: 60px 20px; text-align: center; color: var(--na-meta); font-size: 13px; background: var(--na-empty-bg);";
           empty.innerHTML = `<div style="margin-bottom: 8px; font-size: 32px; opacity: 0.5;">💬</div><div>${TEXT.empty}</div>`;
           listEl.appendChild(empty);
           return;
@@ -587,10 +588,10 @@
           Object.assign(item.style, {
             padding: "12px",
             marginBottom: "0", // gap is controlled by the parent container
-            background: "#fff",
+            background: "var(--na-card-bg)",
             borderRadius: "8px",
-            border: "1px solid #eee",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+            border: "1px solid var(--na-subtle-border)",
+            boxShadow: "var(--na-card-shadow)",
             transition: "transform 0.2s, box-shadow 0.2s",
             position: "relative"
           });
@@ -598,11 +599,11 @@
           if (!isMobile) {
               item.addEventListener("mouseenter", () => {
                   item.style.transform = "translateY(-1px)";
-                  item.style.boxShadow = "0 4px 8px rgba(0,0,0,0.08)";
+                  item.style.boxShadow = "var(--na-card-hover-shadow)";
               });
               item.addEventListener("mouseleave", () => {
                   item.style.transform = "none";
-                  item.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)";
+                  item.style.boxShadow = "var(--na-card-shadow)";
               });
           }
           
@@ -633,7 +634,7 @@
             font-size: 14px;
             margin-right: 10px;
             flex-shrink: 0;
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid var(--na-avatar-border);
           `;
           avatar.textContent = firstChar;
           
@@ -641,7 +642,7 @@
           userInfo.style.cssText = "flex: 1; min-width: 0; display: flex; flex-direction: column;";
           
           const userName = document.createElement("span");
-          userName.style.cssText = "font-weight: 600; color: #333; font-size: 13px; display: flex; align-items: center; gap: 6px;";
+          userName.style.cssText = "font-weight: 600; color: var(--na-text); font-size: 13px; display: flex; align-items: center; gap: 6px;";
           
           // Username text
           const nameText = document.createElement("span");
@@ -658,7 +659,7 @@
           }
           
           const meta = document.createElement("span");
-          meta.style.cssText = "font-size: 11px; color: #999; margin-top: 2px;";
+          meta.style.cssText = "font-size: 11px; color: var(--na-meta); margin-top: 2px;";
           meta.textContent = formatCommentTime(c.createdAt);
           
           userInfo.appendChild(userName);
@@ -668,7 +669,7 @@
           
           // Comment body
           const content = document.createElement("div");
-          content.style.cssText = "color: #444; font-size: 14px; line-height: 1.6; word-break: break-word; padding-left: 42px;";
+          content.style.cssText = "color: var(--na-body-text); font-size: 14px; line-height: 1.6; word-break: break-word; padding-left: 42px;";
           
           // Handle quoted content (simple markdown blockquote)
           let contentText = c.content || '';
@@ -706,7 +707,7 @@
               const mainText = parts.slice(1).join("\n").trim();
               
               const blockquote = document.createElement("div");
-              blockquote.style.cssText = "border-left: 3px solid #bd1c2b; padding-left: 8px; color: #777; margin-bottom: 6px; font-size: 13px; background: #f9f9f9; padding: 4px 8px; border-radius: 0 4px 4px 0;";
+              blockquote.style.cssText = "border-left: 3px solid var(--na-primary); padding-left: 8px; color: var(--na-quote-text); margin-bottom: 6px; font-size: 13px; background: var(--na-quote-bg); padding: 4px 8px; border-radius: 0 4px 4px 0;";
               blockquote.textContent = quoteText;
               content.appendChild(blockquote);
               
@@ -724,9 +725,9 @@
           // Reply button
           const replyBtn = document.createElement("button");
           replyBtn.textContent = "💬 " + TEXT.reply;
-          replyBtn.style.cssText = "border:none; background:transparent; cursor:pointer; color:#666; font-size:12px; transition:color 0.2s;";
+          replyBtn.style.cssText = "border:none; background:transparent; cursor:pointer; color:var(--na-action); font-size:12px; transition:color 0.2s;";
           replyBtn.onmouseenter = () => replyBtn.style.color = "#bd1c2b";
-          replyBtn.onmouseleave = () => replyBtn.style.color = "#666";
+          replyBtn.onmouseleave = () => replyBtn.style.color = "var(--na-action)";
           replyBtn.onclick = function(e) {
             e.stopPropagation();
             showReplyInput(item, c, paraIndex, listEl, headerCountEl);
@@ -738,9 +739,9 @@
             const delBtn = document.createElement("button");
             delBtn.textContent = "🗑️";
             delBtn.title = isAuthor ? TEXT.deleteAuthor : TEXT.deleteAdmin;
-            delBtn.style.cssText = "border:none; background:transparent; cursor:pointer; color:#aaa; font-size:14px; transition:color 0.2s;";
+            delBtn.style.cssText = "border:none; background:transparent; cursor:pointer; color:var(--na-icon); font-size:14px; transition:color 0.2s;";
             delBtn.onmouseenter = () => delBtn.style.color = "#bd1c2b";
-            delBtn.onmouseleave = () => delBtn.style.color = "#aaa";
+            delBtn.onmouseleave = () => delBtn.style.color = "var(--na-icon)";
             delBtn.onclick = async function(e) {
               e.stopPropagation();
               if(!confirm(TEXT.deleteConfirm)) return;
@@ -779,7 +780,7 @@
                 } else {
                   banBtn.textContent = "🚫";
                   banBtn.title = TEXT.banTitle;
-                  banBtn.style.color = "#aaa";
+                  banBtn.style.color = "var(--na-icon)";
                 }
               }
               
@@ -852,10 +853,10 @@
           const likeBtn = document.createElement("button");
           const likes = c.likes || 0;
           likeBtn.innerHTML = `<span style="font-size:14px">❤️</span> <span style="margin-left:4px; font-size:12px;">${likes || ''}</span>`;
-          likeBtn.style.cssText = "border:none; background:transparent; cursor:pointer; color:#aaa; display:flex; align-items:center; padding: 2px 6px; transition:color 0.2s; border-radius:4px;";
+          likeBtn.style.cssText = "border:none; background:transparent; cursor:pointer; color:var(--na-icon); display:flex; align-items:center; padding: 2px 6px; transition:color 0.2s; border-radius:4px;";
           
-          likeBtn.onmouseenter = () => { likeBtn.style.color = "#bd1c2b"; likeBtn.style.background = "#fff0f0"; };
-          likeBtn.onmouseleave = () => { likeBtn.style.color = "#aaa"; likeBtn.style.background = "transparent"; };
+          likeBtn.onmouseenter = () => { likeBtn.style.color = "#bd1c2b"; likeBtn.style.background = "var(--na-like-hover)"; };
+          likeBtn.onmouseleave = () => { likeBtn.style.color = "var(--na-icon)"; likeBtn.style.background = "transparent"; };
 
           likeBtn.onclick = async function(e) {
               e.stopPropagation();
@@ -881,7 +882,7 @@
           // Show replies (collapsed when there are more than two)
           if (c.replies && c.replies.length > 0) {
             const repliesContainer = document.createElement("div");
-            repliesContainer.style.cssText = "margin-top: 12px; padding-left: 42px; border-left: 2px solid #eee;";
+            repliesContainer.style.cssText = "margin-top: 12px; padding-left: 42px; border-left: 2px solid var(--na-subtle-border);";
             
             const MAX_VISIBLE_REPLIES = 2;
             const replies = c.replies;
@@ -934,7 +935,7 @@
       // Build a reply item
       function createReplyItem(reply, paraIndex, listEl, headerCountEl, isAdmin, isAuthor, token, editToken) {
         const item = document.createElement("div");
-        item.style.cssText = "padding: 8px 0; border-bottom: 1px solid #f5f5f5;";
+        item.style.cssText = "padding: 8px 0; border-bottom: 1px solid var(--na-subtle-border);";
         
         const name = reply.userName || reply.userId || TEXT.anonymous;
         let hash = 0;
@@ -949,17 +950,17 @@
         avatar.textContent = name.charAt(0).toUpperCase();
         
         const userName = document.createElement("span");
-        userName.style.cssText = "font-size: 12px; font-weight: 600; color: #555;";
+        userName.style.cssText = "font-size: 12px; font-weight: 600; color: var(--na-reply-text);";
         userName.textContent = name;
         
         const time = document.createElement("span");
-        time.style.cssText = "font-size: 10px; color: #999; margin-left: 8px;";
+        time.style.cssText = "font-size: 10px; color: var(--na-meta); margin-left: 8px;";
         time.textContent = formatCommentTime(reply.createdAt);
         
         header.append(avatar, userName, time);
         
         const content = document.createElement("div");
-        content.style.cssText = "font-size: 13px; color: #555; line-height: 1.5; padding-left: 26px;";
+        content.style.cssText = "font-size: 13px; color: var(--na-reply-text); line-height: 1.5; padding-left: 26px;";
         content.textContent = reply.content;
         
         item.append(header, content);
@@ -988,18 +989,18 @@
         
         const box = document.createElement("div");
         box.className = "reply-input-box";
-        box.style.cssText = "margin-top: 10px; padding: 10px; background: #f9f9f9; border-radius: 6px; margin-left: 42px;";
+        box.style.cssText = "margin-top: 10px; padding: 10px; background: var(--na-reply-box-bg); border-radius: 6px; margin-left: 42px;";
         
         const textarea = document.createElement("textarea");
         textarea.placeholder = TEXT.replyPlaceholder(parentComment.userName || TEXT.anonymous);
-        textarea.style.cssText = "width: 100%; height: 60px; border: 1px solid #ddd; border-radius: 4px; padding: 8px; font-size: 13px; resize: none; box-sizing: border-box; user-select: text; -webkit-user-select: text;";
+        textarea.style.cssText = "width: 100%; height: 60px; border: 1px solid var(--na-input-border); border-radius: 4px; padding: 8px; font-size: 13px; resize: none; box-sizing: border-box; user-select: text; -webkit-user-select: text; background: var(--na-input-bg); color: var(--na-text);";
         
         const btnRow = document.createElement("div");
         btnRow.style.cssText = "display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;";
         
         const cancelBtn = document.createElement("button");
         cancelBtn.textContent = TEXT.cancel;
-        cancelBtn.style.cssText = "padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;";
+        cancelBtn.style.cssText = "padding: 6px 12px; border: 1px solid var(--na-secondary-border); background: var(--na-secondary-bg); color: var(--na-text); border-radius: 4px; cursor: pointer; font-size: 12px;";
         cancelBtn.onclick = () => box.remove();
         
         const submitBtn = document.createElement("button");
@@ -1056,8 +1057,8 @@
           
           // Consistent style: always show the number, no emoji
           // Inactive: grey (#999), active: red (#f56c6c)
-          const color = isActive ? "#f56c6c" : "#999";
-          const borderColor = isActive ? "#f56c6c" : "#e0e0e0"; // lighter border while idle
+          const color = isActive ? "#f56c6c" : "var(--na-count-text)";
+          const borderColor = isActive ? "#f56c6c" : "var(--na-count-border)"; // lighter border while idle
           
           Object.assign(badge.style, {
             display: "inline-block",
@@ -1065,7 +1066,7 @@
             padding: "0 4px",
             fontSize: isMobile ? "11px" : "10px",
             color: color,
-            background: "#fff",
+            background: "var(--na-count-bg)",
             border: `1px solid ${borderColor}`,
             borderRadius: "2px",
             cursor: "pointer",
@@ -1116,7 +1117,7 @@
         if (!isMobile) {
           p.addEventListener("mouseenter", function () {
             if (currentParaIndex !== idx) {
-              p.style.background = "rgba(0, 0, 0, 0.02)";
+              p.style.background = "var(--na-para-hover)";
             }
           });
           p.addEventListener("mouseleave", function () {

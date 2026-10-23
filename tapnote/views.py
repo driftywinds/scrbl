@@ -3,7 +3,7 @@ import json
 import hashlib
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils.dateparse import parse_datetime
@@ -31,6 +31,16 @@ def constant_time_compare(val1, val2):
     for x, y in zip(val1, val2):
         result |= ord(x) ^ ord(y)
     return result == 0
+
+def has_edit_permission(request, note):
+    """True when the request carries this note's edit token."""
+    cookie_token = request.COOKIES.get(f'edit_token_{note.hashcode}')
+    url_token = request.GET.get('token')
+    if url_token and constant_time_compare(str(url_token), str(note.edit_token)):
+        return True
+    if cookie_token and constant_time_compare(str(cookie_token), str(note.edit_token)):
+        return True
+    return False
 
 def validate_id_field(value, field_name, max_length=MAX_ID_LENGTH):
     """Validate ID field format and length."""
@@ -487,15 +497,8 @@ def view_note(request, hashcode):
     html_content = render_markdown_html(note.content, target=note.link_target)
     
     # Use constant-time comparison for edit token
-    cookie_token = request.COOKIES.get(f'edit_token_{note.hashcode}')
     url_token = request.GET.get('token')
-    
-    token_is_valid = False
-    if url_token and constant_time_compare(str(url_token), str(note.edit_token)):
-        token_is_valid = True
-    elif cookie_token and constant_time_compare(str(cookie_token), str(note.edit_token)):
-        token_is_valid = True
-        
+    token_is_valid = has_edit_permission(request, note)
     can_edit = token_is_valid
     
     # Extract title and description for meta tags
@@ -578,12 +581,7 @@ def edit_note(request, hashcode):
         raise Http404()
     
     note = get_object_or_404(Note, hashcode=hashcode)
-    edit_token = request.COOKIES.get(f'edit_token_{note.hashcode}')
-    url_token = request.GET.get('token')
-    
-    # Use constant-time comparison
-    if not ((edit_token and constant_time_compare(str(edit_token), str(note.edit_token))) or
-            (url_token and constant_time_compare(str(url_token), str(note.edit_token)))):
+    if not has_edit_permission(request, note):
         raise Http404()
     
     if request.method == 'POST':
@@ -618,6 +616,26 @@ def edit_note(request, hashcode):
         'fonts': font_options(),
         'selected_font': normalize_font(note.font),
     })
+
+def delete_note(request, hashcode):
+    """Delete a note when the request carries its edit token."""
+    if not re.match(r'^[a-zA-Z0-9]{8,32}$', hashcode):
+        raise Http404()
+
+    note = get_object_or_404(Note, hashcode=hashcode)
+    if not has_edit_permission(request, note):
+        raise Http404()
+
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    note_hashcode = note.hashcode
+    Comment.objects.filter(site_id='tapnote', work_id=note_hashcode).delete()
+    note.delete()
+
+    response = redirect('home')
+    response.delete_cookie(f'edit_token_{note_hashcode}')
+    return response
 
 @csrf_exempt
 def preview_note(request):

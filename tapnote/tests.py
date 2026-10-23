@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.http import Http404
-from .models import Note
+from .models import Comment, Note
 from .views import apply_strikethrough, process_markdown_links
 import uuid
 
@@ -360,6 +360,88 @@ class ViewsTests(TestCase):
         """Test editing non-existent note returns 404"""
         response = self.client.get(reverse('edit_note', args=['invalidhash']))
         self.assertEqual(response.status_code, 404)
+
+    def test_editable_note_shows_delete_button(self):
+        """Editable notes show the pill row: theme, backup, edit, delete."""
+        self.client.cookies[f'edit_token_{self.note.hashcode}'] = self.note.edit_token
+        response = self.client.get(reverse('view_note', args=[self.note.hashcode]))
+        self.assertContains(response, 'data-delete-note')
+        html = response.content.decode()
+        self.assertLess(html.index('data-theme-toggle'), html.index('Backup Edit Link'))
+        self.assertLess(html.index('Backup Edit Link'), html.index(f'/{self.note.hashcode}/edit/'))
+        self.assertLess(html.index(f'/{self.note.hashcode}/edit/'), html.index('data-delete-note'))
+
+    def test_public_note_without_permission_has_no_delete_button(self):
+        """Visitors without the edit token cannot see a Delete action."""
+        response = self.client.get(reverse('view_note', args=[self.note.hashcode]))
+        self.assertNotContains(response, 'data-delete-note')
+
+    def test_editor_has_no_delete_button(self):
+        """Delete only belongs on the public editable note page."""
+        response = self.client.get(reverse('home'))
+        self.assertNotContains(response, 'data-delete-note')
+
+    def test_delete_note_with_valid_cookie(self):
+        """The edit-token cookie authorises deleting the note."""
+        self.client.cookies[f'edit_token_{self.note.hashcode}'] = self.note.edit_token
+        response = self.client.post(reverse('delete_note', args=[self.note.hashcode]))
+        self.assertFalse(Note.objects.filter(pk=self.note.pk).exists())
+        self.assertRedirects(response, reverse('home'))
+        cookie_name = f'edit_token_{self.note.hashcode}'
+        self.assertIn(cookie_name, response.cookies)
+        self.assertEqual(response.cookies[cookie_name].value, '')
+
+    def test_delete_note_with_url_token(self):
+        """The URL token authorises deleting the note too."""
+        url = reverse('delete_note', args=[self.note.hashcode]) + f'?token={self.note.edit_token}'
+        response = self.client.post(url)
+        self.assertFalse(Note.objects.filter(pk=self.note.pk).exists())
+        self.assertRedirects(response, reverse('home'))
+
+    def test_delete_note_without_permission_404(self):
+        """A request without an edit token cannot delete the note."""
+        response = self.client.post(reverse('delete_note', args=[self.note.hashcode]))
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(Note.objects.filter(pk=self.note.pk).exists())
+
+    def test_delete_note_get_not_allowed(self):
+        """Deleting requires a POST request, even with permission."""
+        self.client.cookies[f'edit_token_{self.note.hashcode}'] = self.note.edit_token
+        response = self.client.get(reverse('delete_note', args=[self.note.hashcode]))
+        self.assertEqual(response.status_code, 405)
+        self.assertTrue(Note.objects.filter(pk=self.note.pk).exists())
+
+    def test_delete_note_removes_its_comments(self):
+        """Deleting a note cleans up comments attached to its hashcode."""
+        Comment.objects.create(
+            site_id='tapnote',
+            work_id=self.note.hashcode,
+            chapter_id='main',
+            para_index=0,
+            content='A comment',
+        )
+        self.client.cookies[f'edit_token_{self.note.hashcode}'] = self.note.edit_token
+        self.client.post(reverse('delete_note', args=[self.note.hashcode]))
+        self.assertFalse(Comment.objects.filter(work_id=self.note.hashcode).exists())
+
+    def test_delete_note_is_csrf_protected(self):
+        """The delete endpoint rejects a POST without a CSRF token."""
+        client = Client(enforce_csrf_checks=True)
+        client.cookies[f'edit_token_{self.note.hashcode}'] = self.note.edit_token
+
+        page = client.get(reverse('view_note', args=[self.note.hashcode]))
+        csrf_token = page.cookies['csrftoken'].value
+
+        blocked = client.post(reverse('delete_note', args=[self.note.hashcode]))
+        self.assertEqual(blocked.status_code, 403)
+        self.assertTrue(Note.objects.filter(pk=self.note.pk).exists())
+
+        allowed = client.post(
+            reverse('delete_note', args=[self.note.hashcode]),
+            {'csrfmiddlewaretoken': csrf_token},
+        )
+        self.assertEqual(allowed.status_code, 302)
+        self.assertFalse(Note.objects.filter(pk=self.note.pk).exists())
 
     def test_handler404(self):
         """Test custom 404 handler"""
