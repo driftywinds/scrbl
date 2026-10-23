@@ -486,7 +486,7 @@ def view_note(request, hashcode):
     # Extract title and description for meta tags
     lines = note.content.strip().split('\n')
     full_text = note.content.strip()
-    meta_title = "TeleNote"
+    meta_title = "scrbl"
     meta_description = "A simple markdown note."
 
     # Determine Title
@@ -619,7 +619,7 @@ def export_data(request):
         json.dumps(data, indent=2),
         content_type='application/json'
     )
-    response['Content-Disposition'] = 'attachment; filename="tapnote_backup.json"'
+    response['Content-Disposition'] = 'attachment; filename="scrbl_backup.json"'
     return response
 
 @csrf_exempt

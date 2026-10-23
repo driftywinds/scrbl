@@ -1,4 +1,4 @@
-# Self-contained TeleNote/tapnote image: no manual git clone needed.
+# scrbl image
 #   docker compose up -d --build
 FROM python:3.10-slim
 

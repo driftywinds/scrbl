@@ -1,8 +1,8 @@
-# TeleNote
+# scrbl
 
 [English](README.md) | [中文](README_CN.md) | [功能特性](FEATURES.md)
 
-TeleNote 是一个极简的自托管发布平台，灵感来自 Telegra.ph，专注于基于 Markdown 的即时内容创作。它提供了无干扰的写作体验和即时发布功能，非常适合快速记录笔记、撰写博客文章或分享文档。
+scrbl 是一个极简的自托管发布平台，灵感来自 Telegra.ph，专注于基于 Markdown 的即时内容创作。它提供了无干扰的写作体验和即时发布功能，非常适合快速记录笔记、撰写博客文章或分享文档。
 
 [**🔴 在线演示 (Live Demo)**](https://zoidbergxgd.pythonanywhere.com/)
 

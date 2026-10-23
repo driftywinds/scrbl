@@ -1,8 +1,8 @@
-# TeleNote
+# scrbl
 
 [English](README.md) | [中文](README_CN.md) | [功能特性](FEATURES.md)
 
-TeleNote is a minimalist, self-hosted publishing platform inspired by Telegra.ph, focusing on instant Markdown-based content creation. It provides a distraction-free writing experience with instant publishing capabilities, making it perfect for quick notes, blog posts, or documentation sharing.
+scrbl is a minimalist, self-hosted publishing platform inspired by Telegra.ph, focusing on instant Markdown-based content creation. It provides a distraction-free writing experience with instant publishing capabilities, making it perfect for quick notes, blog posts, or documentation sharing.
 
 [**🔴 Live Demo**](https://zoidbergxgd.pythonanywhere.com/)
 
