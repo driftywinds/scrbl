@@ -12,7 +12,7 @@ from django.db import models
 from django.conf import settings
 from .models import Note, Comment, LikeRecord, BannedUser, TelegraphAccount
 from .telegraph import nodes_to_markdown, markdown_to_nodes
-from .fonts import DEFAULT_FONT, FONTS, FONT_CHOICES, normalize_font
+from .fonts import DEFAULT_FONT, FONTS, font_options, normalize_font
 import re
 import secrets
 
@@ -417,7 +417,7 @@ def home(request):
     if not User.objects.exists():
         return redirect('setup_admin')
     return render(request, 'tapnote/editor.html', {
-        'fonts': FONT_CHOICES,
+        'fonts': font_options(),
         'selected_font': DEFAULT_FONT,
     })
 
@@ -452,7 +452,7 @@ def publish(request):
             return render(request, 'tapnote/editor.html', {
                 'error': f'Content exceeds the limit of {MAX_CONTENT_LENGTH} characters.',
                 'note': {'content': content, 'title': title, 'author': author, 'link_target': link_target},
-                'fonts': FONT_CHOICES,
+                'fonts': font_options(),
                 'selected_font': font,
             })
         if content:
@@ -595,7 +595,7 @@ def edit_note(request, hashcode):
             return render(request, 'tapnote/editor.html', {
                 'note': note,
                 'error': f'Content exceeds the limit of {MAX_CONTENT_LENGTH} characters.',
-                'fonts': FONT_CHOICES,
+                'fonts': font_options(),
                 'selected_font': font,
             })
             
@@ -613,7 +613,7 @@ def edit_note(request, hashcode):
     
     return render(request, 'tapnote/editor.html', {
         'note': note,
-        'fonts': FONT_CHOICES,
+        'fonts': font_options(),
         'selected_font': normalize_font(note.font),
     })
 

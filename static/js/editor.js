@@ -35,4 +35,35 @@ document.addEventListener('DOMContentLoaded', function() {
         // Initialize on load
         autoGrow(textarea);
     }
+
+    // Live font preview: changing the dropdown restyles the editor immediately.
+    // Nothing is persisted here; the choice is only saved by the form submit.
+    const fontSelect = document.getElementById('font');
+    const previewTarget = document.querySelector('[data-font-preview]');
+
+    if (fontSelect && previewTarget) {
+        const loadedFonts = new Set();
+
+        function loadFont(family) {
+            if (!family || loadedFonts.has(family)) return;
+            loadedFonts.add(family);
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://fonts.googleapis.com/css2?family=' + family + '&display=swap';
+            document.head.appendChild(link);
+        }
+
+        function applySelectedFont() {
+            const option = fontSelect.options[fontSelect.selectedIndex];
+            if (!option) return;
+
+            loadFont(option.dataset.googleFamily);
+
+            const stack = option.dataset.stack;
+            if (stack) previewTarget.style.fontFamily = stack;
+        }
+
+        fontSelect.addEventListener('change', applySelectedFont);
+        applySelectedFont();
+    }
 }); 

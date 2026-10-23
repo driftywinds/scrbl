@@ -1,15 +1,23 @@
 /* Base styles */
 body {
-    font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 /* Per-note typography. The note page sets data-font on its container. */
+[data-font="ibm-plex"] {
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+[data-font="source-sans-3"] {
+    font-family: 'Source Sans 3', 'Source Sans Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
 [data-font="newsreader"] {
     font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
 }
 
-[data-font="ibm-plex"] {
-    font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+[data-font="source-serif-4"] {
+    font-family: 'Source Serif 4', 'Source Serif Pro', Georgia, 'Times New Roman', serif;
 }
 
 [data-font="eb-garamond"] {

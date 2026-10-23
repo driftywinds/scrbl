@@ -10,7 +10,7 @@
         <span class="block sm:inline">{{ error }}</span>
     </div>
     {% endif %}
-    <form method="post" action="{% if note %}{% url 'edit_note' note.hashcode %}{% else %}{% url 'publish' %}{% endif %}" class="space-y-4">
+    <form method="post" action="{% if note %}{% url 'edit_note' note.hashcode %}{% else %}{% url 'publish' %}{% endif %}" class="space-y-4" data-font-preview>
         {% csrf_token %}
         <input 
             type="text" 
@@ -33,22 +33,35 @@
             placeholder="Your story..."
         >{% if note %}{{ note.content }}{% endif %}</textarea>
         <div class="flex items-center justify-between gap-4">
-            <label class="flex items-center gap-2 text-sm text-gray-500" for="font">
-                <span>Font</span>
-                <select 
-                    name="font" 
-                    id="font"
-                    class="px-3 py-2 border border-gray-300 rounded-full bg-white text-gray-700 focus:outline-none focus:border-black"
-                >
-                    {% for value, label in fonts %}
-                    <option value="{{ value }}"{% if value == selected_font %} selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </label>
+            <div class="flex items-center gap-2 text-sm text-gray-500">
+                <label for="font">Font</label>
+                <div class="relative">
+                    <select 
+                        name="font" 
+                        id="font"
+                        class="appearance-none min-w-44 pl-5 pr-5 py-2 text-center border border-gray-300 rounded-full bg-white text-gray-700 cursor-pointer focus:outline-none focus:border-black"
+                    >
+                        {% for font in fonts %}
+                        <option 
+                            value="{{ font.value }}"
+                            data-google-family="{{ font.google_family }}"
+                            data-stack="{{ font.css_stack }}"
+                            {% if font.value == selected_font %}selected{% endif %}
+                        >{{ font.label }}</option>
+                        {% endfor %}
+                    </select>
+                    <svg class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path d="M1 1.5 6 6.5 11 1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
             <button type="submit" class="px-6 py-2 border border-black rounded-full hover:bg-black hover:text-white transition-colors">
                 {% if note %}Update{% else %}Publish{% endif %}
             </button>
         </div>
+        <p class="text-xs text-gray-400" id="font-preview-hint">
+            Previewing only &mdash; the font is saved when you {% if note %}click Update{% else %}click Publish{% endif %}.
+        </p>
     </form>
     {% if user.is_staff %}
     <div class="mt-8 text-center text-sm text-gray-400">
