@@ -11,7 +11,7 @@ on:
 
 env:
   REPO_URL: 'https://github.com/driftywinds/scrbl'
-  IMAGE_NAME: 'driftywinds/teledoc'
+  IMAGE_NAME: 'driftywinds/scrbl'
 
 jobs:
   build-and-push:
