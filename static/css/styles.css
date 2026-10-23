@@ -1,4 +1,16 @@
 /* Base styles */
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* Nothing should ever force horizontal scrolling on a narrow screen */
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 body {
     font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
@@ -129,4 +141,185 @@ body {
 .markdown-content td {
     border: 1px solid #ccc;
     padding: 0.5em;
-} 
+}
+
+/* ---------------------------------------------------------------------------
+   Small screens
+   Long words, pasted URLs, code and media used to widen the page on a phone,
+   which forced sideways scrolling to read a note. Everything below keeps the
+   text inside the viewport and made for comfortable reading at phone widths.
+   --------------------------------------------------------------------------- */
+
+.markdown-content,
+.markdown-content p,
+.markdown-content li,
+.markdown-content blockquote,
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6,
+.markdown-content th,
+.markdown-content td {
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* URLs have no natural break points, so they are allowed to split anywhere */
+.markdown-content a {
+    overflow-wrap: anywhere;
+}
+
+/* The note's own title and byline live outside .markdown-content */
+[data-font] h1,
+[data-font] header,
+[data-font] header a {
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.markdown-content pre {
+    max-width: 100%;
+}
+
+.markdown-content img,
+.markdown-content iframe,
+.markdown-content video {
+    max-width: 100%;
+}
+
+/* YouTube embeds ship with width/height attributes; let them fit the column */
+.markdown-content iframe {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+}
+
+/* Keep wide tables inside the column instead of stretching the page */
+.markdown-content table {
+    table-layout: fixed;
+}
+
+@media (max-width: 640px) {
+    .markdown-content {
+        font-size: 1.0625rem; /* 17px, easier on small screens */
+        line-height: 1.7;
+    }
+
+    .markdown-content h1 {
+        font-size: 1.6em;
+        line-height: 1.25;
+    }
+
+    .markdown-content h2 {
+        font-size: 1.35em;
+    }
+
+    .markdown-content h3 {
+        font-size: 1.15em;
+    }
+
+    .markdown-content p {
+        margin: 0.9em 0;
+    }
+
+    .markdown-content ul,
+    .markdown-content ol {
+        margin: 0.9em 0;
+        padding-left: 1.4em;
+    }
+
+    .markdown-content pre {
+        font-size: 0.8125rem; /* 13px */
+        padding: 0.75em;
+    }
+
+    .markdown-content blockquote {
+        padding-left: 0.9em;
+        margin: 0.9em 0;
+    }
+
+    .markdown-content table {
+        font-size: 0.9em;
+    }
+
+    .markdown-content th,
+    .markdown-content td {
+        padding: 0.4em;
+    }
+}
+/* Editor: Write / Preview toggle */
+[data-mode-tab] { color: #6b7280; }
+[data-mode-tab][aria-selected="true"] { background: #000; color: #fff; }
+[data-mode-tab]:not([aria-selected="true"]):hover { color: #000; }
+
+/* Editor fields follow the selected font (also without Tailwind's preflight) */
+[data-write-pane] input,
+[data-write-pane] textarea {
+    font-family: inherit;
+}
+
+/* ---------------------------------------------------------------------------
+   Mobile hardening: nothing inside a note may be wider than the screen.
+   Applies to every descendant (links, spans, paranote badges, list items...)
+   so a long URL wraps instead of being clipped or forcing sideways scrolling.
+   --------------------------------------------------------------------------- */
+.markdown-content {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.markdown-content * {
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* Links/URLs: break at any character if there is no other chance to wrap */
+.markdown-content a,
+.markdown-content a * {
+    overflow-wrap: anywhere;
+    word-break: break-all;
+}
+
+/* Lists must never be wider than the column; keep the numbers/bullets inside */
+.markdown-content ul,
+.markdown-content ol,
+.markdown-content li {
+    max-width: 100%;
+}
+
+/* Code blocks scroll inside themselves rather than widening the page;
+   inline code wraps. */
+.markdown-content pre {
+    overflow-x: auto;
+    white-space: pre;
+    word-break: normal;
+    overflow-wrap: normal;
+}
+
+.markdown-content pre code {
+    word-break: normal;
+    overflow-wrap: normal;
+}
+
+.markdown-content :not(pre) > code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+}
+
+/* Wide tables get their own horizontal scroll instead of breaking the layout */
+.markdown-content table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/* Page container never exceeds the viewport */
+[data-font] {
+    max-width: 100vw;
+    overflow-wrap: break-word;
+}
