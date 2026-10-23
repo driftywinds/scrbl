@@ -12,16 +12,6 @@
     {% endif %}
     <form method="post" action="{% if note %}{% url 'edit_note' note.hashcode %}{% else %}{% url 'publish' %}{% endif %}" class="space-y-4" data-font-preview data-preview-url="{% url 'preview_note' %}">
         {% csrf_token %}
-        <div class="flex items-center justify-between">
-            <div class="inline-flex rounded-full border border-gray-300 p-0.5 text-sm" role="tablist" aria-label="Editor mode">
-                <button type="button" role="tab" data-mode-tab="write" aria-selected="true"
-                        class="px-4 py-1 rounded-full transition-colors">Write</button>
-                <button type="button" role="tab" data-mode-tab="preview" aria-selected="false"
-                        class="px-4 py-1 rounded-full transition-colors">Preview</button>
-            </div>
-            <span class="text-xs text-gray-400 hidden sm:inline" data-mode-hint>Markdown source</span>
-        </div>
-        <div data-write-pane class="space-y-4">
         <input 
             type="text" 
             name="title" 
@@ -42,13 +32,7 @@
             style="height:auto; overflow-y:hidden;"
             placeholder="Your story..."
         >{% if note %}{{ note.content }}{% endif %}</textarea>
-        </div>
-        <div data-preview-wrap hidden class="px-4 pb-4 min-h-[16rem]">
-            <div data-font-preview-pane>
-                <p class="text-gray-300 text-sm">Start typing to see the article preview.</p>
-            </div>
-        </div>
-        <div class="sticky bottom-0 bg-white/95 backdrop-blur py-3 flex items-center justify-between gap-4">
+        <div class="flex items-center justify-between gap-4">
             <div class="flex items-center gap-2 text-sm text-gray-500">
                 <label for="font">Font</label>
                 <div class="relative">
@@ -76,9 +60,16 @@
             </button>
         </div>
         <p class="text-xs text-gray-400" id="font-preview-hint">
-            Choosing a font only previews it &mdash; it is saved when you {% if note %}click Update{% else %}click Publish{% endif %}.
+            Previewing only &mdash; the font is saved when you {% if note %}click Update{% else %}click Publish{% endif %}.
         </p>
     </form>
+
+    <section class="mt-12 pt-8 border-t border-gray-200" id="preview-section">
+        <div class="text-xs uppercase tracking-widest text-gray-400 mb-6">Preview</div>
+        <div data-font-preview-pane>
+            <p class="text-gray-300 text-sm" data-preview-placeholder>Start typing to see the article preview.</p>
+        </div>
+    </section>
 
     {% if user.is_staff %}
     <div class="mt-8 text-center text-sm text-gray-400">

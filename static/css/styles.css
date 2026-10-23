@@ -249,13 +249,3 @@ body {
         padding: 0.4em;
     }
 }
-/* Editor: Write / Preview toggle */
-[data-mode-tab] { color: #6b7280; }
-[data-mode-tab][aria-selected="true"] { background: #000; color: #fff; }
-[data-mode-tab]:not([aria-selected="true"]):hover { color: #000; }
-
-/* Editor fields follow the selected font (also without Tailwind's preflight) */
-[data-write-pane] input,
-[data-write-pane] textarea {
-    font-family: inherit;
-}
