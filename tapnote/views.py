@@ -2,6 +2,7 @@ import markdown
 import json
 import hashlib
 from django.shortcuts import render, get_object_or_404, redirect
+from django.template.loader import render_to_string
 from django.http import Http404, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.admin.views.decorators import staff_member_required
@@ -465,6 +466,17 @@ def publish(request):
             return response
     return redirect('home')
 
+def render_markdown_html(md_text, target="_self"):
+    """Render note markdown to HTML exactly as the note page does."""
+    # FIRST apply strikethrough by regex
+    raw_with_del = apply_strikethrough(md_text)
+
+    # THEN convert with standard Markdown (no strikethrough extension)
+    md = markdown.Markdown(extensions=['fenced_code', 'tables', 'footnotes'])
+    html_content = md.convert(raw_with_del)
+    return process_markdown_links(html_content, target=target)
+
+
 def view_note(request, hashcode):
     # Validate hashcode format (allow 8-32 chars, alphanumeric)
     if not re.match(r'^[a-zA-Z0-9]{8,32}$', hashcode):
@@ -472,13 +484,7 @@ def view_note(request, hashcode):
     
     note = get_object_or_404(Note, hashcode=hashcode)
     
-    # FIRST apply strikethrough by regex
-    raw_with_del = apply_strikethrough(note.content)
-
-    # THEN convert with standard Markdown (no strikethrough extension)
-    md = markdown.Markdown(extensions=['fenced_code', 'tables', 'footnotes'])
-    html_content = md.convert(raw_with_del)
-    html_content = process_markdown_links(html_content, target=note.link_target)
+    html_content = render_markdown_html(note.content, target=note.link_target)
     
     # Use constant-time comparison for edit token
     cookie_token = request.COOKIES.get(f'edit_token_{note.hashcode}')
@@ -507,6 +513,9 @@ def view_note(request, hashcode):
         if candidate_title:
             meta_title = candidate_title[:60]
 
+    # Browser tab title: "<heading> • scrbl"
+    page_title = f"{meta_title} \u2022 scrbl" if meta_title and meta_title != "scrbl" else "scrbl"
+
     # Determine Description
     if lines:
         if note.title:
@@ -533,33 +542,26 @@ def view_note(request, hashcode):
     note_font = normalize_font(note.font)
     extra_font_family = "" if note_font == DEFAULT_FONT else FONTS[note_font]["google_family"]
 
+    context = {
+        'note': note,
+        'content': html_content,
+        'can_edit': can_edit,
+        'meta_title': meta_title,
+        'meta_description': meta_description,
+        'meta_image': meta_image,
+        'enable_comments': settings.ENABLE_COMMENTS,
+        'note_font': note_font,
+        'extra_font_family': extra_font_family,
+        'page_title': page_title,
+    }
+
     # Auto-refresh/set cookie if valid URL token is provided
     # This ensures robustness: if user visits with token link, browser remembers permission
     if url_token and token_is_valid:
-        response = render(request, 'tapnote/view_note.html', {
-            'note': note,
-            'content': html_content,
-            'can_edit': can_edit,
-            'meta_title': meta_title,
-            'meta_description': meta_description,
-            'meta_image': meta_image,
-            'enable_comments': settings.ENABLE_COMMENTS,
-            'note_font': note_font,
-            'extra_font_family': extra_font_family,
-        })
+        response = render(request, 'tapnote/view_note.html', context)
         response.set_cookie(f'edit_token_{note.hashcode}', note.edit_token, max_age=31536000, samesite='Lax')
     else:
-        response = render(request, 'tapnote/view_note.html', {
-            'note': note,
-            'content': html_content,
-            'can_edit': can_edit,
-            'meta_title': meta_title,
-            'meta_description': meta_description,
-            'meta_image': meta_image,
-            'enable_comments': settings.ENABLE_COMMENTS,
-            'note_font': note_font,
-            'extra_font_family': extra_font_family,
-        })
+        response = render(request, 'tapnote/view_note.html', context)
         
     # Increment views
     try:
@@ -616,6 +618,28 @@ def edit_note(request, hashcode):
         'fonts': font_options(),
         'selected_font': normalize_font(note.font),
     })
+
+@csrf_exempt
+def preview_note(request):
+    """Render editor content to HTML for the live preview pane (no writes)."""
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'error': 'POST required'}, status=405)
+
+    content = request.POST.get('content', '')
+    title = request.POST.get('title', '')
+    author = request.POST.get('author', '')
+
+    if len(content) > MAX_CONTENT_LENGTH:
+        return JsonResponse({'ok': False, 'error': 'content_too_long'}, status=400)
+
+    html_content = render_markdown_html(content, target='_self') if content.strip() else ''
+    html = render_to_string('tapnote/_note_preview.html', {
+        'content': html_content,
+        'title': title,
+        'author': author,
+    }, request=request)
+
+    return JsonResponse({'ok': True, 'html': html})
 
 def handler404(request, exception):
     return render(request, 'tapnote/404.html', status=404)

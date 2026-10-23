@@ -186,6 +186,13 @@ class ViewsTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse('home'))
 
+    def test_publish_view_content_too_long_redisplays_form(self):
+        """An oversized draft shows the error on the publish form, not a 500."""
+        response = self.client.post(reverse('publish'), {'content': 'x' * 200001})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Content exceeds the limit')
+        self.assertContains(response, 'action="/publish/"')
+
     def test_view_note_success(self):
         """Test viewing a note works correctly"""
         response = self.client.get(reverse('view_note', args=[self.note.hashcode]))
@@ -246,6 +253,30 @@ class ViewsTests(TestCase):
         self.assertIn('id="fn:1"', html)
         self.assertIn('Here is the footnote', html)
 
+    def test_view_note_page_title_uses_first_heading(self):
+        """Browser tab title is "<heading> • scrbl" for an untitled note."""
+        note = Note.objects.create(content="# A Heading\n\nBody text.")
+        response = self.client.get(reverse('view_note', args=[note.hashcode]))
+        self.assertEqual(response.context['page_title'], 'A Heading \u2022 scrbl')
+        self.assertIn('<title>A Heading \u2022 scrbl</title>', response.content.decode())
+
+    def test_view_note_page_title_prefers_explicit_title(self):
+        """An explicit note title wins over a heading in the content."""
+        note = Note.objects.create(
+            title='Explicit Title',
+            content='# Body Heading\n\nBody text.',
+        )
+        response = self.client.get(reverse('view_note', args=[note.hashcode]))
+        self.assertEqual(response.context['page_title'], 'Explicit Title \u2022 scrbl')
+        self.assertIn('<title>Explicit Title \u2022 scrbl</title>', response.content.decode())
+
+    def test_view_note_page_title_falls_back_to_scrbl(self):
+        """An empty note falls back to the plain brand title."""
+        note = Note.objects.create(content='')
+        response = self.client.get(reverse('view_note', args=[note.hashcode]))
+        self.assertEqual(response.context['page_title'], 'scrbl')
+        self.assertIn('<title>scrbl</title>', response.content.decode())
+
     def test_edit_note_get_with_valid_cookie(self):
         """Test GET request to edit with valid cookie"""
         self.client.cookies[f'edit_token_{self.note.hashcode}'] = self.note.edit_token
@@ -305,6 +336,78 @@ class ViewsTests(TestCase):
         from .views import handler404
         response = self.client.get('/nonexistent-url/')
         self.assertEqual(response.status_code, 404)
+
+
+class PreviewNoteTests(TestCase):
+    """Tests for the live editor preview endpoint."""
+
+    def setUp(self):
+        self.client = Client()
+
+    def test_preview_renders_markdown(self):
+        """Preview uses the same markdown pipeline as the note page."""
+        response = self.client.post(reverse('preview_note'), {
+            'content': '# Heading\n\nSome **bold** text and ~~deleted~~ text.',
+        })
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['ok'])
+        self.assertIn('<h1>Heading</h1>', data['html'])
+        self.assertIn('<strong>bold</strong>', data['html'])
+        self.assertIn('<del>deleted</del>', data['html'])
+        self.assertIn('markdown-content', data['html'])
+
+    def test_preview_includes_title_and_author(self):
+        """The preview header mirrors the published note header."""
+        response = self.client.post(reverse('preview_note'), {
+            'content': 'Body text.',
+            'title': 'My Title',
+            'author': 'Ada',
+        })
+        html = response.json()['html']
+        self.assertIn('My Title', html)
+        self.assertIn('Ada', html)
+
+    def test_preview_escapes_title_and_author(self):
+        """Title and author are escaped, not injected into the preview."""
+        response = self.client.post(reverse('preview_note'), {
+            'content': 'Body text.',
+            'title': '<script>alert(1)</script>',
+            'author': '<b>Ada</b>',
+        })
+        html = response.json()['html']
+        self.assertNotIn('<script>alert(1)</script>', html)
+        self.assertNotIn('<b>Ada</b>', html)
+        self.assertIn('&lt;script&gt;alert(1)&lt;/script&gt;', html)
+
+    def test_preview_shows_header_without_content(self):
+        """A title can be previewed before any body text is written."""
+        response = self.client.post(reverse('preview_note'), {
+            'content': '',
+            'title': 'Only A Title',
+        })
+        html = response.json()['html']
+        self.assertIn('Only A Title', html)
+        self.assertIn('markdown-content', html)
+
+    def test_preview_does_not_create_a_note(self):
+        """Previewing is read-only and must not persist anything."""
+        before = Note.objects.count()
+        self.client.post(reverse('preview_note'), {'content': 'Draft text.'})
+        self.assertEqual(Note.objects.count(), before)
+
+    def test_preview_rejects_get(self):
+        """The preview endpoint only accepts POST."""
+        response = self.client.get(reverse('preview_note'))
+        self.assertEqual(response.status_code, 405)
+
+    def test_preview_rejects_oversized_content(self):
+        """Oversized drafts are rejected like the publish form."""
+        response = self.client.post(reverse('preview_note'), {
+            'content': 'x' * 200001,
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(response.json()['ok'])
 
 
 class IntegrationTests(TestCase):
