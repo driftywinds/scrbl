@@ -19,6 +19,25 @@
             data-preview-url="{% url 'preview_note' %}"
         >
             {% csrf_token %}
+            {% with format_btn="rounded-full px-2.5 py-1.5 text-gray-600 transition-colors hover:bg-black hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-1 cursor-pointer whitespace-nowrap" %}
+            <div class="flex flex-wrap items-center gap-1 rounded-2xl border border-gray-200 bg-white p-1.5 select-none" role="toolbar" aria-label="Markdown formatting" data-format-toolbar>
+                <button type="button" class="{{ format_btn }} text-sm font-bold" data-format="bold" title="Bold" aria-label="Bold">B</button>
+                <button type="button" class="{{ format_btn }} text-sm italic" data-format="italic" title="Italic" aria-label="Italic">I</button>
+                <button type="button" class="{{ format_btn }} text-sm underline" data-format="underline" title="Underline" aria-label="Underline">U</button>
+                <span class="mx-0.5 h-5 w-px bg-gray-200" aria-hidden="true"></span>
+                <button type="button" class="{{ format_btn }} text-xs font-semibold" data-format="h1" title="Heading 1" aria-label="Heading 1">H1</button>
+                <button type="button" class="{{ format_btn }} text-xs font-semibold" data-format="h2" title="Heading 2" aria-label="Heading 2">H2</button>
+                <button type="button" class="{{ format_btn }} text-xs font-semibold" data-format="h3" title="Heading 3" aria-label="Heading 3">H3</button>
+                <button type="button" class="{{ format_btn }} text-xs font-semibold" data-format="h4" title="Heading 4" aria-label="Heading 4">H4</button>
+                <button type="button" class="{{ format_btn }} text-xs font-semibold" data-format="h5" title="Heading 5" aria-label="Heading 5">H5</button>
+                <button type="button" class="{{ format_btn }} text-xs font-semibold" data-format="h6" title="Heading 6" aria-label="Heading 6">H6</button>
+                <span class="mx-0.5 h-5 w-px bg-gray-200" aria-hidden="true"></span>
+                <button type="button" class="{{ format_btn }} text-sm" data-format="ul" title="Bulleted list" aria-label="Bulleted list">&bull; List</button>
+                <button type="button" class="{{ format_btn }} text-sm" data-format="ol" title="Numbered list" aria-label="Numbered list">1. List</button>
+                <span class="mx-0.5 h-5 w-px bg-gray-200" aria-hidden="true"></span>
+                <button type="button" class="{{ format_btn }} text-sm" data-format="link" title="Insert link" aria-label="Insert link">Link</button>
+            </div>
+            {% endwith %}
             <input
                 type="text"
                 name="title"
@@ -90,5 +109,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/editor.js' %}?v=20261023"></script>
+<script src="{% static 'js/editor.js' %}?v=20261023c"></script>
 {% endblock %}

@@ -155,6 +155,15 @@ class ViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'tapnote/editor.html')
 
+    def test_home_editor_has_formatting_toolbar(self):
+        """New notes expose every basic formatting button."""
+        response = self.client.get(reverse('home'))
+        self.assertContains(response, 'data-format-toolbar')
+        for fmt in ['bold', 'italic', 'underline',
+                    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                    'ul', 'ol', 'link']:
+            self.assertContains(response, f'data-format="{fmt}"')
+
     def test_publish_view_get_redirects(self):
         """Test GET request to publish redirects to home"""
         response = self.client.get(reverse('publish'))
@@ -284,6 +293,12 @@ class ViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'tapnote/editor.html')
         self.assertEqual(response.context['note'], self.note)
+        self.assertContains(response, 'data-format-toolbar')
+
+    def test_view_note_has_no_formatting_toolbar(self):
+        """The toolbar belongs to the editor, not the published note."""
+        response = self.client.get(reverse('view_note', args=[self.note.hashcode]))
+        self.assertNotContains(response, 'data-format-toolbar')
 
     def test_edit_note_get_with_url_token(self):
         """Test GET request to edit with URL token"""
@@ -356,6 +371,13 @@ class PreviewNoteTests(TestCase):
         self.assertIn('<strong>bold</strong>', data['html'])
         self.assertIn('<del>deleted</del>', data['html'])
         self.assertIn('markdown-content', data['html'])
+
+    def test_preview_renders_underline_html(self):
+        """The underline button emits raw <u> HTML, which is kept by markdown."""
+        response = self.client.post(reverse('preview_note'), {
+            'content': 'This is <u>underlined</u> text.',
+        })
+        self.assertIn('<u>underlined</u>', response.json()['html'])
 
     def test_preview_includes_title_and_author(self):
         """The preview header mirrors the published note header."""
