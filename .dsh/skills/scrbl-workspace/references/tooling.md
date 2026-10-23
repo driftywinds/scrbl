@@ -80,7 +80,7 @@ Headless browser processes may be blocked by the sandbox. A Node VM with a tiny 
 - Set `window.PointerEvent` and no-op `window.addEventListener`, `scrollTo`, and `document.documentElement`.
 - Load `static/js/editor.js` with `vm.runInThisContext`, invoke the registered `DOMContentLoaded` callback, then drive formatting buttons and assert `value` plus selection.
 
-This caught nested bold/italic, line transformation, and empty-selection behavior without a browser.
+This caught nested bold/italic, line transformation, and empty-selection behavior without a browser. The same fake textarea can dispatch a synthetic `keydown` event with `key: 'Enter'` and the modifier flags to verify list continuation and empty-item exit.
 
 ## Browser and server checks
 

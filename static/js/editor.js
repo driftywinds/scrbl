@@ -507,5 +507,51 @@ document.addEventListener('DOMContentLoaded', function() {
             restoreSelection();
             action();
         });
+
+        // Continue ordered and unordered lists when Enter is pressed at the
+        // end of a list line. Pressing Enter on an empty item exits the list.
+        textarea.addEventListener('keydown', function(event) {
+            if (event.key !== 'Enter' || event.shiftKey || event.ctrlKey ||
+                event.metaKey || event.altKey || event.isComposing) {
+                return;
+            }
+            if (textarea.selectionStart !== textarea.selectionEnd) return;
+
+            const value = textarea.value;
+            const cursor = textarea.selectionStart;
+            const lineStart = value.lastIndexOf('\n', cursor - 1) + 1;
+            let lineEnd = value.indexOf('\n', cursor);
+            if (lineEnd === -1) lineEnd = value.length;
+            if (cursor !== lineEnd) return;
+
+            const line = value.slice(lineStart, lineEnd);
+            const ordered = line.match(/^(\s*)(\d+)([.)])\s+(.*)$/);
+            const unordered = line.match(/^(\s*)([-*+])\s+(.*)$/);
+            if (!ordered && !unordered) return;
+
+            event.preventDefault();
+
+            const content = ordered ? ordered[4] : unordered[3];
+            if (content.trim() === '') {
+                // Empty item: remove the marker and stay on a blank line.
+                textarea.setRangeText('', lineStart, lineEnd, 'end');
+                setSelection(lineStart, lineStart);
+                notifyChange();
+                return;
+            }
+
+            const indent = ordered ? ordered[1] : unordered[1];
+            let nextMarker;
+            if (ordered) {
+                nextMarker = indent + (Number(ordered[2]) + 1) + ordered[3] + ' ';
+            } else {
+                nextMarker = indent + unordered[2] + ' ';
+            }
+
+            const insertion = '\n' + nextMarker;
+            textarea.setRangeText(insertion, cursor, cursor, 'end');
+            setSelection(cursor + insertion.length, cursor + insertion.length);
+            notifyChange();
+        });
     }
 });

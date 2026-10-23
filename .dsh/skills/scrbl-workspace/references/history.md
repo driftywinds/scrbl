@@ -66,6 +66,14 @@ The repository was a small Django publishing app: a markdown editor (`templates/
 - Light mode keeps the previous palette; dark mode flips every sidebar surface and updates even if the theme changes while the panel is open.
 - Comment-count badges on paragraphs use the same variables.
 
+## 9. List continuation and documentation consolidation
+
+- Pressing Enter on a numbered or bulleted list line now inserts the next marker automatically, preserving indentation and `.`/`)` numbering style.
+- Pressing Enter on an empty list item removes the marker and exits the list.
+- Shift/Ctrl/Meta/Alt Enter and IME composition keep their native behavior.
+- The editor script cache version was bumped for the change.
+- Documentation was consolidated into `README.md`; the old Chinese README and the separate Chinese feature document were removed, with their unique deployment, moderation, testing, and tooling details folded into the main README.
+
 ## Current verification baseline
 
 `python manage.py test tapnote` passes 90 tests. JS files pass `node --check`. There is no frontend build step.

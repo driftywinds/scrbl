@@ -93,6 +93,7 @@ Raw HTML is allowed, which is why underline can use `<u>…</u>`. The templates 
   - link inserts `[label](url)` and selects the placeholder URL (or the placeholder label when nothing is selected);
   - the textarea selection is remembered before the button can take focus, including on touch;
   - every programmatic edit dispatches a bubbling `input` event so auto-grow and the live preview update.
+- Pressing Enter at the end of an ordered or unordered list line continues the list (`1.` → `2.`, `-` → `-`) while preserving indentation and `.`/`)` markers. Enter on an empty list item removes the marker and exits the list. Shift/Ctrl/Meta/Alt Enter and IME composition are left to the browser.
 - When adding a new editor action, use `setRangeText` for simple replacements; for line rewrites, compute the block from the current line and restore the selection afterward.
 
 ## Note permissions and deletion
