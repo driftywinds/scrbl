@@ -1,0 +1,13 @@
+{% if title or author %}
+<header class="mb-8 border-b border-gray-100 pb-8">
+    {% if title %}
+    <h1 class="text-3xl md:text-4xl font-bold mb-4 text-gray-900 leading-tight">{{ title }}</h1>
+    {% endif %}
+    {% if author %}
+    <div class="flex items-center text-sm text-gray-500 space-x-3">
+        <span class="font-bold text-gray-700">{{ author }}</span>
+    </div>
+    {% endif %}
+</header>
+{% endif %}
+<div class="markdown-content">{{ content|safe }}</div>
