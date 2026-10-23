@@ -27,7 +27,6 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('setup/', views.setup_admin, name='setup_admin'),
     path('publish/', views.publish, name='publish'),
-    path('preview/', views.preview_note, name='preview_note'),
     path('migration/', views.migration, name='migration'),
     path('migration/export/', views.export_data, name='export_data'),
     path('migration/import/', views.import_data, name='import_data'),

@@ -10,7 +10,7 @@
         <span class="block sm:inline">{{ error }}</span>
     </div>
     {% endif %}
-    <form method="post" action="{% if note %}{% url 'edit_note' note.hashcode %}{% else %}{% url 'publish' %}{% endif %}" class="space-y-4" data-font-preview data-preview-url="{% url 'preview_note' %}">
+    <form method="post" action="{% if note %}{% url 'edit_note' note.hashcode %}{% else %}{% url 'publish' %}{% endif %}" class="space-y-4" data-font-preview>
         {% csrf_token %}
         <input 
             type="text" 
@@ -63,14 +63,6 @@
             Previewing only &mdash; the font is saved when you {% if note %}click Update{% else %}click Publish{% endif %}.
         </p>
     </form>
-
-    <section class="mt-12 pt-8 border-t border-gray-200" id="preview-section">
-        <div class="text-xs uppercase tracking-widest text-gray-400 mb-6">Preview</div>
-        <div data-font-preview-pane>
-            <p class="text-gray-300 text-sm" data-preview-placeholder>Start typing to see the article preview.</p>
-        </div>
-    </section>
-
     {% if user.is_staff %}
     <div class="mt-8 text-center text-sm text-gray-400">
         <a href="{% url 'migration' %}" class="hover:text-gray-600 underline">Data Migration</a>
