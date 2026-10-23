@@ -1,12 +1,14 @@
-version: '3'
 services:
-  web:
+  tapnote:
     build: .
+    restart: unless-stopped
     ports:
       - "${PORT:-9009}:9009"
+    env_file: .env
     volumes:
-      - .:/app
-    env_file:
-      - .env
-    environment:
-      - DATABASE_URL=sqlite:////app/db.sqlite3
+      - tapnote-data:/data
+      - tapnote-media:/app/media
+
+volumes:
+  tapnote-data:
+  tapnote-media:
