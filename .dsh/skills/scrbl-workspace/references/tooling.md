@@ -88,6 +88,18 @@ This caught nested bold/italic, line transformation, and empty-selection behavio
 - HTML presence/order: decode `response.content` and compare `index()` positions.
 - CSS behavior cannot be meaningfully unit tested here; keep the wrapping and dark-mode rules centralized and inspect the rendered class/HTML instead.
 
+## README media
+
+`media/demo.gif` and `media/mobile.png` are real captures of the app, not mockups. The pipeline that produced them:
+
+1. Install `testdeps`, migrate, and seed a demo note plus a superuser (the app redirects to `/setup/` when no superuser exists).
+2. Run `runserver` on `127.0.0.1:8011`.
+3. Launch Edge headless with `--remote-debugging-port=9222` and drive it over CDP from Node (Node 22+ has a global `WebSocket`; no puppeteer needed).
+4. Set inputs by assigning `.value` through the prototype setter and dispatching `input`, click toolbar/theme buttons via `Runtime.evaluate`, and screenshot with `Page.captureScreenshot`.
+5. Compose the GIF with Pillow (`Image.ADAPTIVE`, per-frame `duration`, `disposal=2`).
+
+Useful details: hide scrollbars with `Emulation.setScrollbarsHidden`, run the dev server with `ENABLE_COMMENTS=False` so the paragraph comment-count badges stay out of screenshots, and capture the public note (clear cookies) for reader-facing shots. A 1440px viewport keeps the formatting toolbar on one row.
+
 ## Static cache busting
 
 When changing:

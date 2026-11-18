@@ -1,236 +1,175 @@
 # scrbl
 
-scrbl is a minimalist, self-hosted publishing platform inspired by Telegra.ph, focused on instant Markdown-based content creation. It gives you a distraction-free editor, a live rendered preview, and a clean reading page for quick notes, blog posts, or documentation.
+**A quiet place to write.** scrbl is a small, self-hosted publishing app: write Markdown, watch it render live, and share a short link. No accounts, no dashboards, no build step — just text.
 
-[**🔴 Live Demo**](https://zoidbergxgd.pythonanywhere.com/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-black.svg)](LICENSE)
+[![Django](https://img.shields.io/badge/Django-4.2-092E20.svg)](https://www.djangoproject.com/)
+[![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg)](Dockerfile)
 
-**✨ Key Features:**
+![scrbl demo: writing, live preview, font change, dark mode](media/demo.gif)
 
-- ✍️ **Focused Markdown editor** with a live rendered preview as you type
-- 🧰 **Formatting toolbar** for bold, italic, underline, H1–H6, bulleted/numbered lists, and links
-- ↩️ **Automatic list continuation** — press Enter to create the next list item; press Enter again on an empty item to leave the list
-- 🎨 **Per-note typography** with a live font preview
-- 🌗 **Dark / light mode** that persists across notes and pages, including the comments sidebar
-- 📱 **Mobile-friendly reading** — long titles, URLs, code, and tables wrap instead of causing sideways scrolling
-- 📝 **Telegra.ph experience** — title and author fields, 8-character short links, and a browser tab title derived from the note heading
-- 🖼️ **Social previews** — Open Graph and Twitter Card metadata for shared links
-- 💬 **Paragraph-level comments** with likes, moderation, and fuzzy re-anchoring after edits
-- 🗑️ **Token-based editing and deletion** with the same secure permission
-- 📦 **Data migration** — import and export notes as JSON
-- 🚀 **Deployment and automation** — Docker, PythonAnywhere scripts, renewal automation, and GitHub Actions
+## Why scrbl
 
-![Demo](media/demo.gif)
+- **Write, don't configure.** Markdown with a live rendered preview beside it.
+- **Formatting without syntax.** A toolbar for bold, italic, underline, headings, lists and links — plus lists that continue themselves when you press Enter.
+- **Type that suits the piece.** Six reading fonts, previewed on the real article before you commit.
+- **Readable anywhere.** Long titles, URLs, code and tables wrap instead of forcing sideways scrolling on a phone.
+- **Light or dark**, remembered per browser, including the comments panel.
+- **No account for readers.** Publishing a note gives you a short link and a private edit token.
 
-## Features
+<p align="center">
+  <img src="media/mobile.png" width="300" alt="A scrbl note on a phone">
+  <br><sub>Notes read comfortably on a phone — nothing scrolls sideways.</sub>
+</p>
 
-### Writing and formatting
+## Quick start
 
-- Clean, distraction-free Markdown editor with no account required
-- Live preview that uses the same Markdown pipeline as the published page, including strikethrough, tables, footnotes, fenced code, blockquotes, images, links, and YouTube embeds
-- Formatting toolbar that works on the current selection or line:
-  - **Bold**, **italic**, and **underline**
-  - **H1–H6** headings
-  - Bulleted and numbered lists
-  - Link insertion (`[text](url)`)
-- Buttons toggle where appropriate; bold/italic nesting is preserved
-- Pressing **Enter** on an ordered or unordered list line:
-  - continues the list automatically (`1.` → `2.`, `-` → `-`)
-  - preserves indentation and `1.` / `1)` marker styles
-  - removes an empty list item and exits the list when you press Enter on it
-- Per-note typography: IBM Plex Sans (default), Source Sans 3, Allo, Newsreader, Source Serif 4, or EB Garamond
-- Font changes preview immediately on the rendered article, but are only saved when you click **Update** / **Publish**
-- Mobile-safe wrapping: long titles, URLs, links, inline code, code blocks, tables, images, and embeds stay inside the reading column
-
-### Publishing and content management
-
-- Instant publishing with short, shareable 8-character URLs
-- Optional **Title** and **Author** fields with a clean Telegra.ph-style header
-- Browser tab title follows the note heading (`Heading • scrbl`)
-- Automatic **Open Graph** and **Twitter Card** metadata, including note images
-- Secure edit access through a token cookie or a tokenized URL
-- **Backup Edit Link** copies a tokenized recovery URL
-- Notes can be **deleted** by anyone with edit permission:
-  - a confirmation prompt is shown
-  - deletion is POST-only and CSRF-protected
-  - the note's comments are removed and the edit cookie is cleared
-- Proper rendering of GitHub-flavored-style Markdown features supported by the app, including strikethrough, tables, footnotes, code, and images
-- 200,000-character note limit and 2.5 MB upload limit for stability
-
-### Appearance and accessibility
-
-- Persistent dark/light toggle on the editor, editable notes, and public notes
-- The choice is remembered per browser and applied before first paint
-- Dark mode covers the editor, preview, published note, markdown content, form controls, and the ParaNote comments sidebar
-- Light mode keeps the original clean white-and-black palette
-- Responsive layout with generous mobile padding and wrapped action rows
-- Note titles, bylines, and action pills adapt to small screens
-
-### Comments and community
-
-- Paragraph-level comments powered by [ParaNote](https://github.com/zoidberg-xgd/paranote)
-- Comments and replies anchored to the paragraph they discuss
-- Fuzzy re-anchoring keeps comments attached to the right paragraph even after the note body is edited
-- Likes on comments
-- Moderation tools: admins and note authors can delete comments, and admins can ban/unban users
-- Comments can be disabled with the `ENABLE_COMMENTS` environment setting
-- The entire comment panel—cards, replies, inputs, empty state, and count badges—follows the app's dark/light theme
-
-### Data, administration, and automation
-
-- **Data migration** page for exporting all notes to JSON and importing them back
-- `scripts/txt2tapnote.py` for batch-importing text files as notes
-- Django admin interface for notes and comments
-- First-run setup page to create the initial administrator account
-- `scripts/renew_pa.py` and GitHub Actions automation for renewing a PythonAnywhere free web app
-- Comprehensive Django test suite and CI workflows
-
-## Quick Start
-
-1. Clone the repository:
 ```bash
 git clone https://github.com/driftywinds/scrbl.git
 cd scrbl
-```
-
-2. Start the application with Docker:
-```bash
-chmod +x setup.sh
 ./setup.sh
 ```
 
-3. Open scrbl at `http://localhost:9009`.
+Open <http://localhost:9009>. On first run scrbl asks you to create the administrator account.
 
-On first launch, scrbl redirects to a setup page where you create the administrator account.
+`setup.sh` creates a `.env` with local defaults and runs Docker Compose. If you would rather do it by hand:
+
+```bash
+cp .env.example .env    # set SECRET_KEY, ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS
+docker compose up -d --build
+```
+
+### Without Docker
+
+```bash
+python -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
+## Configuration
+
+Environment variables (`.env` is read by Compose; Docker and systemd need them set directly):
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `SECRET_KEY` | insecure dev key | **Set this in production.** |
+| `DEBUG` | `True` | Set `False` in production. |
+| `ALLOWED_HOSTS` | `*` | Comma-separated hostnames. |
+| `CSRF_TRUSTED_ORIGINS` | empty | Comma-separated origins, e.g. `https://scrbl.example.com`. |
+| `ENABLE_COMMENTS` | `True` | `False` turns off the ParaNote comment layer entirely. |
+| `TIME_ZONE` | `UTC` | IANA name for admin and dated output, e.g. `Asia/Kolkata`. |
+| `DATABASE_URL` | local `db.sqlite3` | Any `dj-database-url` URL; the Docker image uses `/data/db.sqlite3`. |
+| `PORT` | `9009` | Host port published by Compose. |
 
 ## Using scrbl
 
-1. **Write** a note in the editor, or start by selecting a font.
-2. **Format** text with the toolbar, or use Markdown directly. Lists continue automatically when you press Enter.
-3. **Preview** the rendered article in the live preview panel; changing the font updates the preview immediately.
-4. **Publish** when ready. The editor is the same screen for new notes and later edits.
-5. **Edit** from the published note using the Edit button, or copy a recovery link with Backup Edit Link.
-6. **Delete** from the published note when you have edit permission. The confirmation is intentional and permanent.
-7. **Toggle the theme** at any time; the choice is remembered.
+1. **Write.** Title, optional byline, then Markdown. The right-hand pane renders as you type.
+2. **Format.** Select text and use the toolbar, or type Markdown yourself. `1.` and `-` lists continue on Enter; Enter on an empty item ends the list.
+3. **Choose a font.** The preview updates immediately; the choice is saved when you publish.
+4. **Publish.** You are redirected to the note, and the browser stores a private edit token.
+5. **Edit or delete.** The note shows **Edit** and **Delete** while you hold the token. **Backup Edit Link** copies a URL that restores access on another device.
+6. **Share.** Readers get a clean page with no controls — only a theme switch.
 
-## Examples
+### Supported Markdown
 
-````Markdown
-# Heading 1
-Some paragraph text here.
+Headings, lists, links, images, blockquotes, fenced code, tables, footnotes, `~~strikethrough~~`, and inline HTML such as `<u>underline</u>`. Bare YouTube links become embeds.
 
-![Image](https://themepreview.home.blog/wp-content/uploads/2019/07/boat.jpg)
+## Fonts
 
-## Heading 2
-Another paragraph of text with some **bold** text, *italic* text, and ~~strikethrough~~ text.
+| Font | Source |
+| --- | --- |
+| IBM Plex Sans (default) | Google Fonts |
+| Source Sans 3 | Google Fonts |
+| **Allo** | bundled |
+| Newsreader | Google Fonts |
+| Source Serif 4 | Google Fonts |
+| EB Garamond | Google Fonts |
 
-### Heading 3
-1. An ordered list item
-2. Another ordered list item
-
-```python
-# Some Python code snippet
-def greet(name):
-    return f"Hello, {name}!"
-```
-
-#### Heading 4
-A quote block:
-> This is a blockquote!
-
-- Sub list item (unordered)
-- Sub list item (unordered)
-
-#### Table Example
-| Column A | Column B |
-|----------|----------|
-| Cell 1A  | Cell 1B  |
-| Cell 2A  | Cell 2B  |
-
-https://youtu.be/vz91QpgUjFc?si=6nTE2LeukJprXiw1
-````
-
-## Deployment
-
-### Docker
-
-The quickest path is the provided setup script:
+[Allo](https://github.com/joshpuckett/allo) isn't on Google Fonts, so its web fonts ship with scrbl under `static/fonts/allo/` (SIL Open Font License). Update it with:
 
 ```bash
-chmod +x setup.sh
-./setup.sh
-```
-
-### PythonAnywhere
-
-The repository includes deployment helpers and documentation:
-
-- `deploy_pa.sh` — deployment script
-- `scripts/renew_pa.py` — renewal automation for the free web app
-- `DEPLOY_PYTHONANYWHERE.md` — deployment guide
-- `UPDATE_PYTHONANYWHERE.md` — update guide
-- `.github/workflows/renew_pa.yml` — scheduled renewal workflow
-
-### Fonts
-
-Five reading fonts come from Google Fonts. **Allo** is not on Google Fonts, so its
-web fonts are committed under `static/fonts/allo/` (variable weight 100–900 plus two
-obliques) and served by Django.
-
-To pick up a new Allo release:
-
-```bash
-python scripts/update_allo.py          # download, verify checksums, rewrite static/fonts/allo
+python scripts/update_allo.py          # fetch the latest release and verify its checksums
 python scripts/update_allo.py --check  # report only; exits 1 when an update exists
 ```
 
-Then bump `?v=` on `css/styles.css` in `templates/tapnote/base.html` and rebuild.
+Then bump the `?v=` on `css/styles.css` in `templates/tapnote/base.html` and rebuild.
 
-## Testing
+## Comments
 
-scrbl includes unit and integration coverage for models, views, the Markdown pipeline, live preview, permissions, deletion, CSRF behavior, comments, and editor/theme markup.
+Comments are paragraph-level, powered by [ParaNote](https://github.com/zoidberg-xgd/paranote):
 
-```bash
-# Django test runner
-python manage.py test
+- click a paragraph to read or add comments
+- replies, likes, and re-anchoring that keeps comments on the right paragraph after edits
+- note authors and admins can delete comments; admins can ban readers
+- disable the whole layer with `ENABLE_COMMENTS=False`
 
-# Test script
-./run_tests.sh
+## Data and backups
 
-# With coverage report
-./run_tests.sh --coverage
+- **Migration page** (`/migration/`, staff only): export every note as JSON, or import a previous export.
+- The Docker image keeps the database in the `scrbl-data` volume and uploads in `scrbl-media`.
+- `scripts/txt2tapnote.py` bulk-imports text files as notes.
+
+## Deployment
+
+### Docker Compose
+
+```yaml
+services:
+  scrbl:
+    image: ghcr.io/driftywinds/scrbl:latest
+    restart: unless-stopped
+    environment:
+      TIME_ZONE: Asia/Kolkata
+    ports:
+      - "9009:9009"
+    env_file: .env
+    volumes:
+      - ./data:/data
+      - ./media:/app/media
 ```
 
-CI runs the test suite through GitHub Actions.
+Compose changes only take effect after `docker compose up -d --force-recreate`; use `--build` when you changed the source.
 
-## Use Cases
+### PythonAnywhere
 
-- **Personal blog** — publish Markdown articles quickly
-- **Quick notes** — write and share a clean page without an account
-- **Team discussion** — comment on specific paragraphs and reply in context
-- **Self-hosted publishing** — keep full control of your content and data
-- **Content backup** — export and restore notes as JSON
+`deploy_pa.sh`, `scripts/renew_pa.py`, `DEPLOY_PYTHONANYWHERE.md` and `UPDATE_PYTHONANYWHERE.md` cover deployment and renewing a free web app.
 
-## Contributing
+## Development
 
-Feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+```bash
+python manage.py test          # full suite
+./run_tests.sh --coverage      # with coverage
+node --check static/js/editor.js
+```
+
+There is no frontend build step: Tailwind and Google Fonts load from CDNs, and Django serves the static files (WhiteNoise in production).
+
+```
+tapnote/      Django app: models, views, Markdown pipeline, font choices
+prototype/    project settings and URLs
+templates/    editor, note, setup and migration pages
+static/       CSS, JS, and the bundled Allo webfonts
+scripts/      maintenance scripts (font update, renewal, txt import)
+```
+
+Adding a font means an entry in `tapnote/fonts.py` (and a migration for `Note.font`); if it isn't on Google Fonts, add its `@font-face` to `static/css/styles.css` and leave `google_family` empty.
+
+## Limitations
+
+- Notes are capped at 200,000 characters.
+- One SQLite database per instance; no multi-tenant accounts.
+- Edit access is a bearer token — anyone with the link can edit until it is deleted.
 
 ## License
 
-[MIT License](LICENSE)
+[MIT](LICENSE).
 
-## Acknowledgments
+## Thanks
 
 - Inspired by [Telegra.ph](https://telegra.ph)
-- Originally based on concepts from [vorniches/tapnote](https://github.com/vorniches/tapnote)
-- Built with Django and Tailwind CSS
-- Uses [Prototype](https://github.com/vorniches/prototype), [snap2txt](https://github.com/vorniches/snap2txt), and [Cursor](https://cursor.so)
-- Note typography is chosen per note: IBM Plex Sans (default), Source Sans 3, Allo, Newsreader, Source Serif 4, or EB Garamond
-- [Allo](https://github.com/joshpuckett/allo) by Josh Puckett is bundled as a self-hosted variable webfont (SIL Open Font License); update it with `python scripts/update_allo.py`
-- The other five fonts are served by Google Fonts
-- Comment system powered by [ParaNote](https://github.com/zoidberg-xgd/paranote)
-
-## Support
-
-- Create an issue for bug reports or feature requests
-- Star the repository if you find it useful
-- Fork it to contribute or create your own version
+- Started from concepts in [vorniches/tapnote](https://github.com/vorniches/tapnote)
+- Built with [Django](https://www.djangoproject.com/) and [Tailwind CSS](https://tailwindcss.com/)
+- Comments by [ParaNote](https://github.com/zoidberg-xgd/paranote)
+- Allo typeface by [Josh Puckett](https://github.com/joshpuckett/allo), SIL Open Font License
