@@ -1,8 +1,10 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.http import Http404
+from .fonts import font_options, normalize_font
 from .models import Comment, Note
 from .views import apply_strikethrough, process_markdown_links
+import os
 import uuid
 
 
@@ -678,3 +680,49 @@ class BanTests(TestCase):
         
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.json()['error'], 'user_banned')
+
+
+class AlloFontTests(TestCase):
+    """The bundled Allo webfont is offered and wired up like the hosted ones."""
+
+    FONT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'static', 'fonts', 'allo')
+
+    def setUp(self):
+        self.client = Client()
+        from django.contrib.auth.models import User
+        User.objects.create_user(username='allouser', password='x')
+
+    def test_font_options_expose_allo_as_bundled(self):
+        options = {option['value']: option for option in font_options()}
+        self.assertIn('allo', options)
+        self.assertEqual(options['allo']['label'], 'Allo')
+        self.assertEqual(options['allo']['google_family'], '')
+        self.assertIn("'Allo'", options['allo']['css_stack'])
+        self.assertEqual(normalize_font('allo'), 'allo')
+
+    def test_bundled_webfonts_exist(self):
+        for filename in ('AlloVariable.woff2', 'Allo-Oblique.woff2', 'Allo-BoldOblique.woff2', 'OFL.txt', 'VERSION'):
+            path = os.path.join(self.FONT_DIR, filename)
+            self.assertTrue(os.path.exists(path), f'{filename} is missing')
+            self.assertGreater(os.path.getsize(path), 0)
+
+    def test_stylesheet_declares_allo_faces(self):
+        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'static', 'css', 'styles.css')
+        with open(path, encoding='utf-8') as handle:
+            css = handle.read()
+        self.assertIn("font-family: 'Allo'", css)
+        self.assertIn('../fonts/allo/AlloVariable.woff2', css)
+        self.assertIn('[data-font="allo"]', css)
+
+    def test_editor_lists_allo_option(self):
+        response = self.client.get(reverse('home'))
+        self.assertContains(response, 'data-format-toolbar')
+        self.assertContains(response, 'value="allo"')
+        self.assertContains(response, "&#x27;Allo&#x27;")
+
+    def test_view_note_uses_allo_without_google_fonts_link(self):
+        note = Note.objects.create(title='Allo note', content='Body text.', font='allo')
+        response = self.client.get(reverse('view_note', args=[note.hashcode]))
+        self.assertContains(response, 'data-font="allo"')
+        # Bundled font: no Google Fonts request for it.
+        self.assertNotIn('family=Allo', response.content.decode())

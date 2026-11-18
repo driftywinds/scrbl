@@ -37,7 +37,7 @@ scrbl is a minimalist, self-hosted publishing platform inspired by Telegra.ph, f
   - continues the list automatically (`1.` → `2.`, `-` → `-`)
   - preserves indentation and `1.` / `1)` marker styles
   - removes an empty list item and exits the list when you press Enter on it
-- Per-note typography: IBM Plex Sans (default), Source Sans 3, Newsreader, Source Serif 4, or EB Garamond
+- Per-note typography: IBM Plex Sans (default), Source Sans 3, Allo, Newsreader, Source Serif 4, or EB Garamond
 - Font changes preview immediately on the rendered article, but are only saved when you click **Update** / **Publish**
 - Mobile-safe wrapping: long titles, URLs, links, inline code, code blocks, tables, images, and embeds stay inside the reading column
 
@@ -170,6 +170,21 @@ The repository includes deployment helpers and documentation:
 - `UPDATE_PYTHONANYWHERE.md` — update guide
 - `.github/workflows/renew_pa.yml` — scheduled renewal workflow
 
+### Fonts
+
+Five reading fonts come from Google Fonts. **Allo** is not on Google Fonts, so its
+web fonts are committed under `static/fonts/allo/` (variable weight 100–900 plus two
+obliques) and served by Django.
+
+To pick up a new Allo release:
+
+```bash
+python scripts/update_allo.py          # download, verify checksums, rewrite static/fonts/allo
+python scripts/update_allo.py --check  # report only; exits 1 when an update exists
+```
+
+Then bump `?v=` on `css/styles.css` in `templates/tapnote/base.html` and rebuild.
+
 ## Testing
 
 scrbl includes unit and integration coverage for models, views, the Markdown pipeline, live preview, permissions, deletion, CSRF behavior, comments, and editor/theme markup.
@@ -209,7 +224,9 @@ Feel free to submit a Pull Request. For major changes, please open an issue firs
 - Originally based on concepts from [vorniches/tapnote](https://github.com/vorniches/tapnote)
 - Built with Django and Tailwind CSS
 - Uses [Prototype](https://github.com/vorniches/prototype), [snap2txt](https://github.com/vorniches/snap2txt), and [Cursor](https://cursor.so)
-- Note typography is chosen per note: IBM Plex Sans (default), Source Sans 3, Newsreader, Source Serif 4, or EB Garamond, all by Google Fonts
+- Note typography is chosen per note: IBM Plex Sans (default), Source Sans 3, Allo, Newsreader, Source Serif 4, or EB Garamond
+- [Allo](https://github.com/joshpuckett/allo) by Josh Puckett is bundled as a self-hosted variable webfont (SIL Open Font License); update it with `python scripts/update_allo.py`
+- The other five fonts are served by Google Fonts
 - Comment system powered by [ParaNote](https://github.com/zoidberg-xgd/paranote)
 
 ## Support

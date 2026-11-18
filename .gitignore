@@ -56,6 +56,9 @@ staticfiles/
 # snap2txt
 project_contents.txt
 
+# Local audit report
+AUDIT.md
+
 # Config files with credentials
 pa_config.yaml
 scripts/config/pa_config.yaml

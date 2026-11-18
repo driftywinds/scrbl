@@ -98,6 +98,19 @@ When changing:
 
 Use a new value for each batch of changes. Without it, mobile browsers can keep the old asset after a deploy.
 
+## Writing binary assets
+
+The file tools only write UTF-8 text. Vendored binaries (fonts, images) need a script, and in some sessions spawned processes cannot create files under `static/` even though existing files can be edited. Two workarounds:
+
+- Run the provisioning script once with escalated sandbox permission for that exact command.
+- Create the target files first with the `write` tool, then overwrite them from the script.
+
+Deleting created binaries may also need escalation; verify with `gh`-style existence checks instead of assuming success.
+
+## Bundled fonts
+
+`python scripts/update_allo.py` vendors the latest Allo release, verifying the release's published SHA256SUMS. `--check` exits 1 when a newer release exists, which is suitable for a scheduled CI job. After updating, bump the CSS `?v=` and rebuild the image so `collectstatic` copies the new files.
+
 ## Scratch cleanup
 
 These paths are gitignored and safe to remove after verification:

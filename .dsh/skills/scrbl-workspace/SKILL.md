@@ -85,7 +85,8 @@ Raw HTML is allowed, which is why underline can use `<u>…</u>`. The templates 
 - The editor is a two-column write/preview layout on desktop and stacked on mobile.
 - The preview endpoint is `preview_note` at `/preview/`. It is read-only, capped at `MAX_CONTENT_LENGTH`, and renders `_note_preview.html`; it never saves.
 - `editor.js` updates the preview with a short debounce and ignores stale responses via a sequence number.
-- Font choices come from `tapnote/fonts.py`. Each `<option>` carries `data-google-family` and `data-stack`; changing the select loads the Google font and applies the stack to the preview immediately.
+- Font choices come from `tapnote/fonts.py`. Each `<option>` carries `data-google-family` and `data-stack`; changing the select loads the Google font and applies the stack to the preview immediately. An empty `google_family` marks a font bundled with the app instead of hosted on Google Fonts.
+- Allo is bundled: `static/fonts/allo/` holds the variable woff2 plus two obliques, `OFL.txt`, and `VERSION`; its `@font-face` rules live in `styles.css`. Refresh it with `python scripts/update_allo.py` (or `--check` in CI) and bump the CSS version afterwards. Adding a font key also needs a `Note.font` choices migration.
 - The formatting toolbar is server-rendered in `editor.html` and handled by `editor.js`:
   - bold/italic use asterisk-run-aware toggling;
   - underline uses `<u>` because Markdown has no underline;

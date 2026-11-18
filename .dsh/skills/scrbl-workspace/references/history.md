@@ -74,6 +74,14 @@ The repository was a small Django publishing app: a markdown editor (`templates/
 - The editor script cache version was bumped for the change.
 - Documentation was consolidated into `README.md`; the old Chinese README and the separate Chinese feature document were removed, with their unique deployment, moderation, testing, and tooling details folded into the main README.
 
+## 10. Allo webfont
+
+- Added Allo (SIL OFL) as a sixth reading font. It is not on Google Fonts, so the variable woff2 and two obliques are vendored in `static/fonts/allo/` with `@font-face` rules in `styles.css`.
+- `fonts.py` entries with an empty `google_family` are treated as bundled: the editor and note page skip the Google Fonts request.
+- `scripts/update_allo.py` downloads the latest GitHub release, verifies the published SHA256SUMS, rewrites the vendored files and `VERSION`; `--check` reports staleness for CI.
+- Added `0012_note_font_allo` for the new `Note.font` choice.
+- Static asset permissions in this session required a one-off escalated run to write the binary font files; the text edits used the normal file tools.
+
 ## Current verification baseline
 
-`python manage.py test tapnote` passes 90 tests. JS files pass `node --check`. There is no frontend build step.
+`python manage.py test tapnote` passes 95 tests. JS files pass `node --check`. There is no frontend build step.

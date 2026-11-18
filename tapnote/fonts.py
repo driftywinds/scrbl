@@ -3,7 +3,8 @@
 Each entry keeps the three things that must stay in sync in one place:
 
 * ``label``          - what the editor dropdown shows
-* ``google_family``  - the family query for Google Fonts
+* ``google_family``  - the family query for Google Fonts, or ``""`` for a
+                       font bundled with the app (see ``static/fonts/``)
 * ``css_stack``      - the CSS fallback chain used when the webfont is unavailable
 
 The keys are stored in ``Note.font``, so they are effectively a database
@@ -23,6 +24,12 @@ FONTS = {
         "label": "Source Sans 3",
         "google_family": "Source+Sans+3:ital,wght@0,400;0,600;1,400",
         "css_stack": "'Source Sans 3', 'Source Sans Pro', system-ui, -apple-system, 'Segoe UI', sans-serif",
+    },
+    # Bundled (not on Google Fonts); @font-face lives in static/css/styles.css
+    "allo": {
+        "label": "Allo",
+        "google_family": "",
+        "css_stack": "'Allo', system-ui, -apple-system, 'Segoe UI', sans-serif",
     },
     # Serif
     "newsreader": {

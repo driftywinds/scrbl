@@ -14,10 +14,40 @@ body {
     font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
+/* Allo — bundled variable webfont (not on Google Fonts).
+   Refresh the files with scripts/update_allo.py; only fetched when a note uses it. */
+@font-face {
+    font-family: 'Allo';
+    src: url('../fonts/allo/AlloVariable.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Allo';
+    src: url('../fonts/allo/Allo-Oblique.woff2') format('woff2');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Allo';
+    src: url('../fonts/allo/Allo-BoldOblique.woff2') format('woff2');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+
 /* Per-note typography. The note page sets data-font on its container. */
 [data-font] {
     min-width: 0;
     max-width: 100%;
+}
+
+[data-font="allo"] {
+    font-family: 'Allo', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 [data-font="ibm-plex"] {
     font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
